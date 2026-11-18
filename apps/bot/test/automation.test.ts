@@ -9,6 +9,8 @@ import { createServices, type Services } from "../src/services.js";
 import { createTestD1 } from "./helpers/sqlite-d1.js";
 
 const MIN = 60_000;
+/** Automatización sin el reporte nocturno: así los tests no dependen de la hora en que corren. */
+const quiet = { ...defaultBotSettings().automation, dailyReport: false };
 const HOUR = 60 * MIN;
 
 const INSIGHT = {
@@ -70,6 +72,7 @@ async function setup(
   await base.store.setSetting(SETTINGS_KEYS.settings, {
     ...defaultBotSettings(),
     provider: "fake",
+    automation: quiet,
     ...settings,
   });
   await base.store.setSetting(SETTINGS_KEYS.profile, {
@@ -234,7 +237,7 @@ describe("Cazador de ventas", () => {
 
   it("manda un solo toque dentro de la ventana de 3 a 20 h, y nunca dos veces", async () => {
     const { services, db, sent } = await setup({
-      automation: { ...defaultBotSettings().automation, vigilante: false },
+      automation: { ...quiet, vigilante: false },
     });
     const { conv } = await seed(db, { messages: warm(5 * 60) });
     const first = await runAutomation(services);
@@ -252,7 +255,7 @@ describe("Cazador de ventas", () => {
 
   it("respeta la ventana, la pausa, el pedido de humano y que el cliente no haya hablado último", async () => {
     const { services, db, sent } = await setup({
-      automation: { ...defaultBotSettings().automation, vigilante: false },
+      automation: { ...quiet, vigilante: false },
     });
     await seed(db, { messages: warm(60) }); // muy pronto (1 h)
     await seed(db, { messages: warm(22 * 60) }); // tarde (22 h)
@@ -273,7 +276,7 @@ describe("Cazador de ventas", () => {
 
   it("no pasa del tope diario", async () => {
     const { services, db, sent } = await setup({
-      automation: { ...defaultBotSettings().automation, vigilante: false, hunterDailyMax: 1 },
+      automation: { ...quiet, vigilante: false, hunterDailyMax: 1 },
     });
     await seed(db, { messages: warm(5 * 60) });
     await seed(db, { messages: warm(6 * 60) });
@@ -286,7 +289,7 @@ describe("Cazador de ventas", () => {
 describe("Encuestas y reseñas", () => {
   it("encuesta al cerrar; un 5 agradece e invita a reseña una sola vez", async () => {
     const { services, db, sent } = await setup(
-      { automation: { ...defaultBotSettings().automation, surveys: true, hunter: false } },
+      { automation: { ...quiet, surveys: true, hunter: false } },
       { reviewUrl: "https://g.page/r/taller-fierro/review" },
     );
     const { externalId } = await seed(db, {
@@ -317,7 +320,7 @@ describe("Encuestas y reseñas", () => {
 
   it("una calificación baja pasa la conversación al equipo", async () => {
     const { services, db } = await setup({
-      automation: { ...defaultBotSettings().automation, surveys: true, hunter: false },
+      automation: { ...quiet, surveys: true, hunter: false },
     });
     const { externalId } = await seed(db, {
       channel: "telegram",
@@ -339,7 +342,7 @@ describe("Encuestas y reseñas", () => {
 
   it("sin encuestas, invita a reseña a quien quedó contento según el Vigilante", async () => {
     const { services, db, sent } = await setup(
-      { automation: { ...defaultBotSettings().automation, hunter: false } },
+      { automation: { ...quiet, hunter: false } },
       { reviewUrl: "https://g.page/r/x/review" },
     );
     await seed(db, {
@@ -358,7 +361,7 @@ describe("Encuestas y reseñas", () => {
 describe("Recupera no-shows", () => {
   it("retoma a leads enfriados hace días; en WhatsApp solo con plantilla aprobada", async () => {
     const auto = {
-      ...defaultBotSettings().automation,
+      ...quiet,
       vigilante: false,
       hunter: false,
       noShows: true,
@@ -405,7 +408,7 @@ describe("Reporte nocturno, watchdog y tope de gasto", () => {
   it("manda el resumen una vez al día a partir de la hora configurada", async () => {
     const hour = localClock(Date.now(), "UTC").hour;
     const { services, notices } = await setup({
-      automation: { ...defaultBotSettings().automation, dailyReportHour: hour },
+      automation: { ...quiet, dailyReport: true, dailyReportHour: hour },
     });
     expect((await runAutomation(services)).dailyReport).toBe(true);
     expect(notices[0]?.title).toContain("Tu día");
@@ -414,7 +417,7 @@ describe("Reporte nocturno, watchdog y tope de gasto", () => {
 
   it("alerta tras 3 fallas de IA en 30 minutos, con freno de 6 horas", async () => {
     const { services, notices } = await setup({
-      automation: { ...defaultBotSettings().automation, dailyReport: false },
+      automation: quiet,
     });
     for (let i = 0; i < 3; i++) {
       await services.store.createTicket({
