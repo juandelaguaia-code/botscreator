@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout.js";
 import { Spinner } from "./components/ui.js";
 import { api, UNAUTHORIZED_EVENT } from "./lib/api.js";
+import { CommandsPage } from "./pages/Commands.js";
 import { ImprovementsPage } from "./pages/Improvements.js";
 import { InboxPage } from "./pages/Inbox.js";
 import { KnowledgePage } from "./pages/Knowledge.js";
@@ -11,6 +12,7 @@ import { LoginPage } from "./pages/Login.js";
 import { PlaygroundPage } from "./pages/Playground.js";
 import { SettingsPage } from "./pages/Settings.js";
 import { SummaryPage } from "./pages/Summary.js";
+import { SuperpowersPage } from "./pages/Superpowers.js";
 import { TicketsPage } from "./pages/Tickets.js";
 
 type Session =
@@ -72,6 +74,8 @@ export function App() {
         <Route path="/conocimiento" element={<KnowledgePage />} />
         <Route path="/mejoras" element={<ImprovementsPage />} />
         <Route path="/probar" element={<PlaygroundPage />} />
+        <Route path="/superpoderes" element={<SuperpowersPage />} />
+        <Route path="/comandos" element={<CommandsPage />} />
         <Route path="/configuracion" element={<SettingsPage onSaved={refresh} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

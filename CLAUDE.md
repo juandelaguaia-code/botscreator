@@ -21,3 +21,10 @@ Spec: `docs/01-mapa-funcional.md` · arquitectura: `docs/02-arquitectura.md` · 
 - `pnpm test` — Vitest; los tests del bot corren el SQL real sobre `node:sqlite` (`apps/bot/test/helpers/sqlite-d1.ts`).
 - `pnpm build && pnpm db:migrate:local && pnpm dev` — Worker local con panel en `/admin`.
 - `LLM_PROVIDER=fake` en `apps/bot/.dev.vars` para probar sin llave de IA.
+- `pnpm yunque <comando>` — CLI de operación contra la API del panel (`apps/bot/scripts/yunque.mjs`).
+
+## Agentes
+
+Las skills para operar bots están en `.claude/skills/` (catálogo en `docs/04-agentes.md`). Si agregas o
+cambias una, actualiza también `apps/panel/src/lib/catalog.ts` (página Comandos del panel). Los
+superpoderes se documentan en `docs/05-superpoderes.md` y en el mismo catálogo.

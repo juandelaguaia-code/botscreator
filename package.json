@@ -17,7 +17,8 @@
     "format": "biome check --write .",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "db:migrate:local": "pnpm --filter @yunque/bot db:migrate:local",
-    "deploy": "pnpm build && pnpm --filter @yunque/bot deploy"
+    "deploy": "pnpm build && pnpm --filter @yunque/bot deploy",
+    "yunque": "node apps/bot/scripts/yunque.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.8",

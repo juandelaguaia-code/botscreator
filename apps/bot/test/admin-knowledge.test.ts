@@ -231,3 +231,23 @@ describe("exportar", () => {
     expect(messages).toContain("conversacion,canal,cliente");
   });
 });
+
+describe("vista del prompt", () => {
+  it("devuelve las secciones con los frenos primero y bloqueados", async () => {
+    const { request, login } = setup();
+    expect((await request("/admin/api/prompt")).status).toBe(401);
+    await login();
+    const preview = (await (await request("/admin/api/prompt?channel=telegram")).json()) as {
+      channel: string;
+      sections: Array<{ id: string; locked: boolean; text: string }>;
+      volatile: string;
+      totalChars: number;
+    };
+    expect(preview.channel).toBe("telegram");
+    expect(preview.sections[0]).toMatchObject({ id: "guardrails", locked: true });
+    expect(preview.sections.find((s) => s.id === "business")?.locked).toBe(false);
+    expect(preview.sections.find((s) => s.id === "channel")?.text).toContain("Telegram");
+    expect(preview.volatile).toContain("Fecha y hora");
+    expect(preview.totalChars).toBeGreaterThan(500);
+  });
+});

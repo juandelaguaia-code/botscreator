@@ -10,6 +10,8 @@ const NAV = [
   { to: "/conocimiento", label: "Conocimiento", icon: "▤", end: false },
   { to: "/mejoras", label: "Mejoras", icon: "✦", end: false },
   { to: "/probar", label: "Probar bot", icon: "▶", end: false },
+  { to: "/superpoderes", label: "Superpoderes", icon: "⚡", end: false },
+  { to: "/comandos", label: "Comandos", icon: "⌘", end: false },
   { to: "/configuracion", label: "Configuración", icon: "⚙", end: false },
 ];
 

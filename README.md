@@ -20,6 +20,15 @@ Cloudflare, con **tus** llaves de IA, y trae su panel de administración en `/ad
 Lo que viene está en el [roadmap](docs/03-roadmap.md); la especificación completa en el
 [mapa funcional](docs/01-mapa-funcional.md).
 
+## Agentes y superpoderes
+
+- **15 agentes** (skills de Claude Code) en `.claude/skills/`: configurar el bot, conectar canales,
+  superpoderes, base de conocimiento, prompt, afinar, reportes, mantenimiento, cliente misterioso y modo
+  agencia. Catálogo y reglas: [docs/04-agentes.md](docs/04-agentes.md).
+- **CLI de operación** `pnpm yunque <comando>` que usan los agentes (`pnpm yunque ayuda`).
+- **Superpoderes**: estado, reglas y configuración en [docs/05-superpoderes.md](docs/05-superpoderes.md).
+- En el panel, **Superpoderes** y **Comandos** muestran todo con prompts listos para copiar.
+
 ## Requisitos
 
 - Node.js ≥ 22 (recomendado 24, ver `.nvmrc`) y pnpm 9

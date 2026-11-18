@@ -1,10 +1,14 @@
 import {
+  buildSystemPrompt,
+  CHANNELS,
+  type Channel,
   type ConversationDetailDto,
   type ConversationFilter,
   leadUpdateSchema,
   loginInputSchema,
   noteInputSchema,
   type PlaygroundReplyDto,
+  type PromptPreviewDto,
   pauseInputSchema,
   playgroundInputSchema,
   replyInputSchema,
@@ -182,6 +186,28 @@ async function settingsDto(c: Context<AppEnv>): Promise<SettingsDto> {
 }
 
 adminApi.get("/settings", async (c) => c.json(await settingsDto(c)));
+
+/** El prompt tal como lo recibe el modelo, por secciones (lo editable y lo bloqueado 🔒). */
+adminApi.get("/prompt", async (c) => {
+  const channelParam = c.req.query("channel") as Channel | undefined;
+  const channel = channelParam && CHANNELS.includes(channelParam) ? channelParam : "web";
+  const { config, knowledge } = c.get("services");
+  const { profile, settings } = await config();
+  const built = buildSystemPrompt({
+    profile,
+    channel,
+    now: new Date(),
+    knowledgeBase: await knowledge.hasDocuments(),
+    buttons: settings.buttonsEnabled,
+  });
+  const dto: PromptPreviewDto = {
+    channel,
+    sections: built.sections,
+    volatile: built.volatile,
+    totalChars: built.stable.length,
+  };
+  return c.json(dto);
+});
 
 adminApi.put("/settings", async (c) => {
   const input = await readJson(c.req.raw, settingsUpdateSchema);

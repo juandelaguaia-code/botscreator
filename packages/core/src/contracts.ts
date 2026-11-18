@@ -227,3 +227,11 @@ export interface KnowledgeGapDto {
 }
 
 export type ConversationFilter = "all" | "needs_human" | "unread" | "leads";
+
+export interface PromptPreviewDto {
+  channel: Channel;
+  sections: Array<{ id: string; title: string; locked: boolean; text: string }>;
+  /** Parte que cambia en cada mensaje (fecha, pasajes de la base de conocimiento). */
+  volatile: string;
+  totalChars: number;
+}
