@@ -1,0 +1,27 @@
+{
+  "name": "yunque",
+  "private": true,
+  "description": "Plataforma propia de chatbots de IA por giro de negocio, auto-hospedada en Cloudflare.",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @yunque/bot dev",
+    "dev:panel": "pnpm --filter @yunque/panel dev",
+    "build": "pnpm --filter @yunque/panel build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "db:migrate:local": "pnpm --filter @yunque/bot db:migrate:local",
+    "deploy": "pnpm build && pnpm --filter @yunque/bot deploy"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.8",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

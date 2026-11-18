@@ -1,0 +1,17 @@
+# Copia este archivo a .dev.vars para desarrollo local (nunca lo subas al repo).
+# En producción cada valor se guarda con: wrangler secret put NOMBRE
+
+DASHBOARD_PASSWORD=cambia-esta-clave
+
+# Proveedor de IA: con LLM_PROVIDER=fake el bot responde en modo prueba sin llave.
+LLM_PROVIDER=fake
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+XAI_API_KEY=
+GEMINI_API_KEY=
+
+# Telegram (opcional): token de BotFather y un secreto aleatorio para el webhook.
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_WEBHOOK_SECRET=
+# Chat de Telegram del dueño para avisos de handoff.
+OWNER_TELEGRAM_CHAT_ID=

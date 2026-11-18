@@ -1,0 +1,54 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yunque-bot",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // El panel compilado (apps/panel) se sirve en /admin. Corre `pnpm build` antes de dev/deploy.
+  "assets": {
+    "directory": "../panel/dist",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      // Nombre único por bot: nunca reutilices la base de otro bot.
+      "database_name": "yunque_bot_db",
+      // Reemplaza con el id que devuelve `wrangler d1 create yunque_bot_db`.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Embeddings (bge-m3) en tu cuenta de Cloudflare.
+  "ai": { "binding": "AI" },
+  // Base de conocimiento: `wrangler vectorize create yunque_bot_kb --dimensions=1024 --metric=cosine`
+  "vectorize": [{ "binding": "VECTORIZE", "index_name": "yunque_bot_kb" }],
+  "vars": {
+    "BOT_NAME": "Mi negocio",
+    "LLM_PROVIDER": "anthropic",
+    "PUBLIC_URL": ""
+  },
+  "observability": { "enabled": true },
+
+  "env": {
+    // Desarrollo local sin cuenta de Cloudflare: sin Workers AI ni Vectorize, la base de
+    // conocimiento usa un índice local en D1 (ver src/knowledge). `pnpm dev` usa este entorno.
+    "local": {
+      "name": "yunque-bot-local",
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "yunque_bot_db",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "vars": {
+        "BOT_NAME": "Mi negocio",
+        "LLM_PROVIDER": "fake",
+        "PUBLIC_URL": ""
+      }
+    }
+  }
+}
