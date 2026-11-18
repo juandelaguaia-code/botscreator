@@ -392,3 +392,37 @@ export interface CampaignDto {
   skipped: number;
   createdAt: number;
 }
+
+// ---------- Modo agencia ----------
+
+export const agencyClientInputSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  niche: z.string().trim().max(80).optional(),
+  url: z
+    .string()
+    .trim()
+    .url()
+    .max(300)
+    .refine((u) => /^https?:\/\//i.test(u), "Solo http(s)"),
+  token: z.string().trim().min(16).max(200),
+  monthlyFee: z.number().nonnegative().max(1_000_000).optional(),
+});
+export type AgencyClientInput = z.infer<typeof agencyClientInputSchema>;
+
+export interface AgencyClientDto {
+  id: string;
+  name: string;
+  niche: string | null;
+  url: string;
+  monthlyFee: number | null;
+  /** Estado leído en vivo del bot del cliente. */
+  online: boolean;
+  version: string | null;
+  summary: SummaryDto | null;
+  error: string | null;
+}
+
+export interface AgencyLeadDto extends LeadDto {
+  clientId: string;
+  clientName: string;
+}

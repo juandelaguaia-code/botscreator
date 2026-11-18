@@ -15,3 +15,29 @@ TELEGRAM_BOT_TOKEN=
 TELEGRAM_WEBHOOK_SECRET=
 # Chat de Telegram del dueño para avisos de handoff.
 OWNER_TELEGRAM_CHAT_ID=
+
+# Meta: WhatsApp Cloud API, Instagram y Messenger
+META_APP_SECRET=
+META_VERIFY_TOKEN=
+META_APP_ID=
+WHATSAPP_TOKEN=
+WHATSAPP_PHONE_NUMBER_ID=
+META_PAGE_TOKEN=
+
+# WhatsApp vía Twilio
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_WHATSAPP_FROM=
+
+# Avisos por correo (Resend)
+RESEND_API_KEY=
+OWNER_EMAIL=
+EMAIL_FROM=
+
+# Integraciones
+CALCOM_API_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# Modo agencia: token para que tu central opere este bot (mínimo 16 caracteres)
+AGENCY_TOKEN=

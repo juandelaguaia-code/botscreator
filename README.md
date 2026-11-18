@@ -6,25 +6,22 @@ Cloudflare, con **tus** llaves de IA, y trae su panel de administración en `/ad
 > _Yunque_ es el nombre en clave del proyecto; la marca visible del panel se configura por bot.
 > Implementación propia e independiente: no contiene código, textos ni marca de otras plataformas.
 
-## Qué hace hoy (fases 1 y 2)
+## Qué hace hoy (fases 1 a 5 y Modo agencia)
 
-- Atiende 24/7 en el **chat de tu web** (widget de una línea) y en **Telegram**.
-- Responde solo con la información de tu negocio (perfil estructurado) y con **frenos de seguridad** que el dueño no puede desactivar.
-- **Captura leads** y **pasa a una persona** cuando lo piden, hay queja, facturación o tema legal; abre ticket y avisa al dueño por Telegram.
-- Cuando respondes desde el panel, el bot **se aparta 60 min** y luego retoma sabiendo lo que dijiste.
-- IA intercambiable: **Claude** (por defecto), ChatGPT, Grok o Gemini, en niveles Económico / Equilibrado / Máximo. Registra tokens y costo de cada respuesta.
-- **Base de conocimiento** (Workers AI + Vectorize) y **Blindaje anti-invento**: verifica precios, horarios y promesas antes de enviar; lo que no sabe va al radar de huecos (pestaña Mejoras).
-- Botones tocables opcionales y exportación de leads/conversaciones en CSV y JSON.
-- Panel: Resumen, Bandeja (tomar/devolver/pausar/notas), Clientes (exportar CSV), Tickets, Probar bot y Configuración.
+- **Canales:** chat web (una línea), Telegram, WhatsApp (Cloud API de Meta o Twilio), Instagram y Messenger, con botones nativos y ventana de 24 h de WhatsApp.
+- **Cerebro:** Claude por defecto (ChatGPT, Grok o Gemini opcionales), niveles Económico/Equilibrado/Máximo, base de conocimiento con Workers AI + Vectorize, notas de voz e imágenes.
+- **Los 13 superpoderes:** Blindaje anti-invento, Vigilante, Handoff, Cazador de ventas, Oído y vista, Voz de marca, Reportes nocturnos, Multi-idioma, Encuestas, Recupera no-shows, Pide reseñas, Cobros con Stripe y Galería, más botones tocables, agenda con Cal.com, recordatorios, campañas y tope de gasto.
+- **Panel `/admin`:** Resumen, Bandeja, Clientes, Tickets, Agenda y cobros, Analista, Estadísticas, Costos, Campañas, Mejoras, Conocimiento, Galería, Superpoderes, Conexiones, Probar bot, Comandos, Modo agencia y Configuración.
+- **Modo agencia:** cualquier bot es tu central: portafolio de bots de clientes en vivo, leads de todos y pipeline comercial.
 
-Lo que viene está en el [roadmap](docs/03-roadmap.md); la especificación completa en el
-[mapa funcional](docs/01-mapa-funcional.md).
+Estado por fase en el [roadmap](docs/03-roadmap.md); especificación en el [mapa funcional](docs/01-mapa-funcional.md);
+qué cuentas y secretos necesitas para producción en [docs/06-cuentas-y-secretos.md](docs/06-cuentas-y-secretos.md).
 
 ## Agentes y superpoderes
 
-- **15 agentes** (skills de Claude Code) en `.claude/skills/`: configurar el bot, conectar canales,
+- **18 agentes** (skills de Claude Code) en `.claude/skills/`: configurar el bot, conectar canales,
   superpoderes, base de conocimiento, prompt, afinar, reportes, mantenimiento, cliente misterioso y modo
-  agencia. Catálogo y reglas: [docs/04-agentes.md](docs/04-agentes.md).
+  agencia (cliente nuevo, ROI, demo, cotizar, propuesta, cobrar). Catálogo y reglas: [docs/04-agentes.md](docs/04-agentes.md).
 - **CLI de operación** `pnpm yunque <comando>` que usan los agentes (`pnpm yunque ayuda`).
 - **Superpoderes**: estado, reglas y configuración en [docs/05-superpoderes.md](docs/05-superpoderes.md).
 - En el panel, **Superpoderes** y **Comandos** muestran todo con prompts listos para copiar.
@@ -64,6 +61,7 @@ cd apps/bot
 npx wrangler login
 npx wrangler d1 create yunque_bot_db                # copia el database_id a wrangler.jsonc
 npx wrangler vectorize create yunque_bot_kb --dimensions=1024 --metric=cosine
+npx wrangler r2 bucket create yunque-bot-media
 npx wrangler secret put DASHBOARD_PASSWORD
 npx wrangler secret put ANTHROPIC_API_KEY           # o OPENAI_API_KEY / XAI_API_KEY / GEMINI_API_KEY
 pnpm db:migrate:remote

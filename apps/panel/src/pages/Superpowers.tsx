@@ -29,6 +29,32 @@ function liveState(id: string, data: SettingsDto | null): string | null {
       return `Tono: ${profile.tone}`;
     case "idiomas":
       return `Idioma: ${profile.language}`;
+    case "vigilante":
+      return settings.automation.vigilante ? "Encendido" : "Apagado";
+    case "cazador":
+      return settings.automation.hunter
+        ? `Encendido · máx. ${settings.automation.hunterDailyMax}/día`
+        : "Apagado";
+    case "encuestas":
+      return settings.automation.surveys ? "Encendidas" : "Apagadas";
+    case "no-shows":
+      return settings.automation.noShows
+        ? `Encendido · a los ${settings.automation.noShowAfterDays} días`
+        : "Apagado";
+    case "resenas":
+      return profile.reviewUrl
+        ? settings.automation.reviews
+          ? "Encendido"
+          : "Apagado"
+        : "Falta tu link de reseñas";
+    case "reportes":
+      return settings.automation.dailyReport
+        ? `Cada noche a las ${settings.automation.dailyReportHour}:00`
+        : "Apagado";
+    case "cobros":
+      return settings.payments.enabled
+        ? `Encendido · ${settings.payments.currency.toUpperCase()}`
+        : "Apagado";
     default:
       return null;
   }

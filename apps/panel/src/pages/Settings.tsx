@@ -477,6 +477,249 @@ export function SettingsPage({ onSaved }: { onSaved: () => void }) {
           </label>
         </Section>
 
+        <Section
+          title="Superpoderes automáticos"
+          description="Corren solos cada 15 minutos. Los mensajes que inicia el bot respetan sus garantías: un solo seguimiento por conversación y nunca si un humano tiene el chat."
+        >
+          {(
+            [
+              [
+                "vigilante",
+                "Vigilante",
+                "Califica cada conversación terminada y te avisa si un cliente quedó molesto o una venta peligra.",
+              ],
+              [
+                "hunter",
+                "Cazador de ventas",
+                "Un solo seguimiento a chats enfriados entre 3 y 20 h después.",
+              ],
+              [
+                "surveys",
+                "Encuestas de satisfacción",
+                "Pide una calificación del 1 al 5 al cerrar una atención resuelta.",
+              ],
+              [
+                "noShows",
+                "Recupera no-shows",
+                "Segundo intento a interesados que se enfriaron hace días.",
+              ],
+              [
+                "reviews",
+                "Pide reseñas",
+                "Invita a dejar reseña a quien quedó contento (requiere tu link abajo).",
+              ],
+              [
+                "reminders",
+                "Recordatorio de cita",
+                "Avisa ~24 h antes de cada cita agendada por el bot.",
+              ],
+              [
+                "dailyReport",
+                "Reporte nocturno",
+                "Te manda el resumen del día por Telegram o correo.",
+              ],
+            ] as const
+          ).map(([key, label, hint]) => (
+            <label key={key} className="flex items-center justify-between gap-4">
+              <span>
+                <span className="block text-sm font-medium">{label}</span>
+                <span className="block text-xs text-slate-500">{hint}</span>
+              </span>
+              <input
+                type="checkbox"
+                className="h-5 w-5"
+                checked={settings.automation[key]}
+                onChange={(e) =>
+                  s({ automation: { ...settings.automation, [key]: e.target.checked } })
+                }
+              />
+            </label>
+          ))}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Máximo de seguimientos por día">
+              <Input
+                type="number"
+                min={1}
+                max={200}
+                value={settings.automation.hunterDailyMax}
+                onChange={(e) =>
+                  s({
+                    automation: { ...settings.automation, hunterDailyMax: Number(e.target.value) },
+                  })
+                }
+              />
+            </Field>
+            <Field label="No-shows: días después">
+              <Input
+                type="number"
+                min={1}
+                max={30}
+                value={settings.automation.noShowAfterDays}
+                onChange={(e) =>
+                  s({
+                    automation: { ...settings.automation, noShowAfterDays: Number(e.target.value) },
+                  })
+                }
+              />
+            </Field>
+            <Field label="Hora del reporte (0–23)">
+              <Input
+                type="number"
+                min={0}
+                max={23}
+                value={settings.automation.dailyReportHour}
+                onChange={(e) =>
+                  s({
+                    automation: { ...settings.automation, dailyReportHour: Number(e.target.value) },
+                  })
+                }
+              />
+            </Field>
+          </div>
+          <Field
+            label="Link para dejar reseña"
+            hint="Google Maps u otro. Sin link, el bot no pide reseñas."
+          >
+            <Input
+              type="url"
+              placeholder="https://g.page/r/…/review"
+              value={profile.reviewUrl}
+              onChange={(e) => p({ reviewUrl: e.target.value })}
+            />
+          </Field>
+          <Field
+            label="Tope de gasto de IA por mes (USD)"
+            hint="Al llegar, el bot deja de usar IA y te pasa las conversaciones. Vacío = sin tope."
+          >
+            <Input
+              type="number"
+              min={0.5}
+              step={0.5}
+              value={settings.monthlyBudgetUsd ?? ""}
+              onChange={(e) =>
+                s({ monthlyBudgetUsd: e.target.value ? Number(e.target.value) : null })
+              }
+            />
+          </Field>
+        </Section>
+
+        <Section
+          title="Agenda y cobros"
+          description="Las llaves van como secretos: CALCOM_API_KEY para la agenda; STRIPE_SECRET_KEY y STRIPE_WEBHOOK_SECRET para cobrar."
+        >
+          <label className="flex items-center justify-between gap-4">
+            <span className="text-sm font-medium">Agendar citas en Cal.com</span>
+            <input
+              type="checkbox"
+              className="h-5 w-5"
+              checked={settings.booking.enabled}
+              onChange={(e) => s({ booking: { ...settings.booking, enabled: e.target.checked } })}
+            />
+          </label>
+          <Field
+            label="Id del tipo de evento en Cal.com"
+            hint="Lo ves en la URL del evento en tu Cal.com."
+          >
+            <Input
+              type="number"
+              min={1}
+              value={settings.booking.eventTypeId ?? ""}
+              onChange={(e) =>
+                s({
+                  booking: {
+                    ...settings.booking,
+                    eventTypeId: e.target.value ? Number(e.target.value) : null,
+                  },
+                })
+              }
+            />
+          </Field>
+          <label className="flex items-center justify-between gap-4">
+            <span className="text-sm font-medium">Cobrar con links de pago de Stripe</span>
+            <input
+              type="checkbox"
+              className="h-5 w-5"
+              checked={settings.payments.enabled}
+              onChange={(e) => s({ payments: { ...settings.payments, enabled: e.target.checked } })}
+            />
+          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Moneda (ISO)" hint="clp, mxn, usd, eur…">
+              <Input
+                maxLength={3}
+                value={settings.payments.currency}
+                onChange={(e) =>
+                  s({ payments: { ...settings.payments, currency: e.target.value.toLowerCase() } })
+                }
+              />
+            </Field>
+            <Field label="Monto máximo por link" hint="Vacío = sin tope.">
+              <Input
+                type="number"
+                min={1}
+                value={settings.payments.maxAmount ?? ""}
+                onChange={(e) =>
+                  s({
+                    payments: {
+                      ...settings.payments,
+                      maxAmount: e.target.value ? Number(e.target.value) : null,
+                    },
+                  })
+                }
+              />
+            </Field>
+          </div>
+        </Section>
+
+        <Section
+          title="Plantillas de WhatsApp"
+          description="Para escribir fuera de las 24 h desde el último mensaje del cliente, Meta exige una plantilla aprobada. Escribe su nombre e idioma (p. ej. es_MX). Con Twilio, el nombre es el ContentSid."
+        >
+          {(
+            [
+              ["reminder", "Recordatorio de cita"],
+              ["noShow", "Recupera no-shows"],
+              ["campaign", "Campañas"],
+            ] as const
+          ).map(([key, label]) => (
+            <div key={key} className="grid gap-3 sm:grid-cols-[1fr_2fr_1fr]">
+              <p className="self-center text-sm font-medium">{label}</p>
+              <Input
+                placeholder="nombre_de_la_plantilla"
+                value={settings.whatsappTemplates[key]?.name ?? ""}
+                onChange={(e) =>
+                  s({
+                    whatsappTemplates: {
+                      ...settings.whatsappTemplates,
+                      [key]: e.target.value
+                        ? {
+                            name: e.target.value,
+                            language: settings.whatsappTemplates[key]?.language ?? "es",
+                          }
+                        : undefined,
+                    },
+                  })
+                }
+              />
+              <Input
+                placeholder="es"
+                value={settings.whatsappTemplates[key]?.language ?? ""}
+                disabled={!settings.whatsappTemplates[key]}
+                onChange={(e) => {
+                  const current = settings.whatsappTemplates[key];
+                  if (current)
+                    s({
+                      whatsappTemplates: {
+                        ...settings.whatsappTemplates,
+                        [key]: { ...current, language: e.target.value },
+                      },
+                    });
+                }}
+              />
+            </div>
+          ))}
+        </Section>
+
         <Section title="Comportamiento">
           <label className="flex items-center justify-between gap-4">
             <span>

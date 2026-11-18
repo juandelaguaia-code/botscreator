@@ -55,6 +55,9 @@ pnpm yunque ayuda
 | `/cliente-nuevo`      | Bot aislado para un negocio cliente (agencia)                                 | crea recursos (con tu sí)      |
 | `/cotizar`            | Precio con costos reales y piso de margen (agencia)                           | —                              |
 | `/propuesta`          | Documento comercial para cerrar (agencia)                                     | —                              |
+| `/roi`                | Retorno del bot para un prospecto, en 3 escenarios (agencia)                  | —                              |
+| `/demo`               | Bot de demostración con los datos públicos del prospecto (agencia)            | bot de demos                   |
+| `/cobrar`             | Cobro de instalación o mensualidad con Stripe de la agencia (agencia)         | —                              |
 
 ## Reglas comunes de todos los agentes
 

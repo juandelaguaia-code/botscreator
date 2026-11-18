@@ -55,7 +55,7 @@ export const SUPERPOWERS: Superpower[] = [
       "Al responder tú, el bot se aparta 60 min (configurable)",
       "Pausa manual de 30 min a 8 h o hasta reactivar",
     ],
-    status: "parcial",
+    status: "activo",
     phase: 3,
     configure: "Configuración → Comportamiento · Bandeja → Pausar bot",
     prompt:
@@ -118,10 +118,10 @@ export const SUPERPOWERS: Superpower[] = [
       "Calificación 1–5★ en 8 dimensiones con el modelo rápido",
       "Watchdog: 3 fallas en 30 min → alerta, con freno de 6 h",
     ],
-    status: "proximamente",
+    status: "activo",
     phase: 4,
     prompt:
-      "Implementa el Vigilante con IA según docs/05-superpoderes.md y el roadmap (fase 4), con tests y su sección en el panel.",
+      "Usa la skill superpoderes: revisa cómo está configurado el Vigilante de mi bot y muéstrame en el Analista qué conversaciones quedaron con clientes molestos o ventas abiertas.",
   },
   {
     id: "cazador",
@@ -135,10 +135,10 @@ export const SUPERPOWERS: Superpower[] = [
       "1 toque por conversación de por vida, máximo 30 al día",
       "Nunca si está pausada o si el cliente habló último",
     ],
-    status: "proximamente",
+    status: "activo",
     phase: 4,
     prompt:
-      "Implementa el Cazador de ventas según docs/05-superpoderes.md (fase 4), con sus garantías como tests.",
+      "Usa la skill superpoderes: explícame cómo está configurado el Cazador de ventas (ventana, tope diario) y muéstrame los seguimientos que mandó esta semana.",
   },
   {
     id: "oido-vista",
@@ -148,10 +148,10 @@ export const SUPERPOWERS: Superpower[] = [
     description:
       "Transcribe notas de voz y entiende imágenes (productos, comprobantes, ubicaciones) para responder a lo que el cliente realmente mandó.",
     rules: ["Whisper en Workers AI, sin llave extra", "Imágenes con el mismo cerebro del bot"],
-    status: "proximamente",
+    status: "activo",
     phase: 3,
     prompt:
-      "Implementa Oído y vista (fase 3): transcripción de notas de voz con Workers AI y visión de imágenes en los canales.",
+      "Usa la skill superpoderes: confirma que mi bot transcribe notas de voz y entiende imágenes en mis canales conectados, y dime cómo probarlo.",
   },
   {
     id: "reportes",
@@ -161,9 +161,10 @@ export const SUPERPOWERS: Superpower[] = [
     description:
       "Cada noche te llega el resumen: conversaciones, leads nuevos, ventas calientes y clientes molestos. Mientras tanto, la skill reporte arma el informe mensual a pedido.",
     rules: ["Envío nocturno por Telegram o correo", "Hoy: skill reporte (manual)"],
-    status: "proximamente",
+    status: "activo",
     phase: 4,
-    prompt: "Usa la skill reporte: hazme el informe de este mes en lenguaje de dueño de negocio.",
+    prompt:
+      "Usa la skill superpoderes: configura el reporte nocturno de mi bot (hora y canal de aviso) y mándame uno de prueba con /reporte.",
   },
   {
     id: "encuestas",
@@ -173,9 +174,10 @@ export const SUPERPOWERS: Superpower[] = [
     description:
       "Al cerrar una atención pide una calificación del 1 al 5 y/o un comentario; si es baja, te avisa al instante.",
     rules: ["1–5 y/o comentario libre", "Aviso inmediato con calificación baja"],
-    status: "proximamente",
+    status: "activo",
     phase: 4,
-    prompt: "Implementa las Encuestas de satisfacción según docs/05-superpoderes.md (fase 4).",
+    prompt:
+      "Usa la skill superpoderes: activa las encuestas de satisfacción en mi bot y explícame qué pasa cuando alguien califica bajo.",
   },
   {
     id: "no-shows",
@@ -185,9 +187,10 @@ export const SUPERPOWERS: Superpower[] = [
     description:
       "Reengancha a los interesados que se enfriaron hace días. En WhatsApp fuera de 24 h usa tu plantilla aprobada.",
     rules: ["Solo leads calientes enfriados", "WhatsApp: plantilla aprobada por Meta"],
-    status: "proximamente",
+    status: "activo",
     phase: 4,
-    prompt: "Implementa Recupera no-shows según docs/05-superpoderes.md (fase 4).",
+    prompt:
+      "Usa la skill superpoderes: activa Recupera no-shows en mi bot y, si uso WhatsApp, ayúdame a configurar la plantilla aprobada.",
   },
   {
     id: "resenas",
@@ -197,9 +200,10 @@ export const SUPERPOWERS: Superpower[] = [
     description:
       "Invita a dejar reseña en Google solo a quien quedó conforme. Se activa al conectar tu link de reseñas.",
     rules: ["Solo con satisfacción alta", "Requiere el link de Google del negocio"],
-    status: "proximamente",
+    status: "activo",
     phase: 4,
-    prompt: "Implementa Pide reseñas según docs/05-superpoderes.md (fase 4).",
+    prompt:
+      "Usa la skill superpoderes: activa Pide reseñas con este link de Google: [pega tu link de reseñas].",
   },
   {
     id: "cobros",
@@ -208,9 +212,10 @@ export const SUPERPOWERS: Superpower[] = [
     tagline: "Del «sí» al pago sin salir del chat",
     description: "Manda un link de pago de Stripe y te avisa cuando el pago se confirma.",
     rules: ["Link de pago + webhook de confirmación", "Se activa al conectar tu Stripe"],
-    status: "proximamente",
+    status: "activo",
     phase: 5,
-    prompt: "Implementa Cobros por chat con Stripe según docs/05-superpoderes.md (fase 5).",
+    prompt:
+      "Usa la skill superpoderes: activa los cobros con Stripe en mi bot (moneda y tope) y guíame para guardar mis llaves como secretos.",
   },
   {
     id: "galeria",
@@ -220,9 +225,10 @@ export const SUPERPOWERS: Superpower[] = [
     description:
       "El cliente pide ver el menú o el lugar y le llegan tus fotos o un video-recorrido reales, guardados en tu R2, con «cuándo usarlo».",
     rules: ["Archivos en R2 con nombre y cuándo usarlos", "Opt-in"],
-    status: "proximamente",
+    status: "activo",
     phase: 5,
-    prompt: "Implementa la Galería según docs/05-superpoderes.md (fase 5).",
+    prompt:
+      "Usa la skill superpoderes: ayúdame a armar la Galería de mi bot con las fotos y videos de mi negocio y a decir cuándo usar cada uno.",
   },
 ];
 
@@ -387,5 +393,84 @@ export const COMMAND_GROUPS: CommandGroup[] = [
         ),
       },
     ],
+  },
+];
+
+export interface PipelineStep {
+  stage: string;
+  title: string;
+  command: string;
+  description: string;
+  prompt: string;
+}
+
+/** Modo agencia: del prospecto al cliente que paga cada mes. */
+export const AGENCY_PIPELINE: PipelineStep[] = [
+  {
+    stage: "Antes de cerrar",
+    title: "Calcular el ROI",
+    command: "/roi",
+    description: "El número que convence, con supuestos claros, listo para la reunión.",
+    prompt:
+      "/roi Calcula el retorno de un bot para [negocio], que recibe [N] mensajes al día y tarda [X] en responder.",
+  },
+  {
+    stage: "Antes de cerrar",
+    title: "Demo en vivo",
+    command: "/demo",
+    description: "Un bot de muestra con los datos públicos del prospecto y el link para mandarle.",
+    prompt: "/demo Arma una demo para [negocio] con la información de su web [url].",
+  },
+  {
+    stage: "Paso 1",
+    title: "Cliente nuevo",
+    command: "/cliente-nuevo",
+    description:
+      "Monta su bot aislado: su Worker, su base y su índice, configurado de punta a punta.",
+    prompt:
+      "/cliente-nuevo Monta el bot de [negocio] y déjalo listo para conectarlo a mi portafolio.",
+  },
+  {
+    stage: "Paso 2",
+    title: "Cotizar",
+    command: "/cotizar",
+    description: "Instalación + mensualidad + extras con costos reales, nunca bajo tu piso.",
+    prompt: "/cotizar Cotiza el bot de [negocio] con [canales] y mantenimiento mensual.",
+  },
+  {
+    stage: "Paso 3",
+    title: "Propuesta",
+    command: "/propuesta",
+    description: "El documento comercial completo para cerrar.",
+    prompt: "/propuesta Haz la propuesta para [negocio] con la opción recomendada.",
+  },
+  {
+    stage: "Paso 4",
+    title: "Encender superpoderes",
+    command: "/superpoderes",
+    description: "Los que su giro necesita: agenda, cobros, reseñas, seguimiento.",
+    prompt:
+      "/superpoderes Enciende en el bot de [negocio] los superpoderes que convienen a su giro.",
+  },
+  {
+    stage: "Paso 5",
+    title: "Cobrar",
+    command: "/cobrar",
+    description: "Link de pago de la instalación o la mensualidad, con su comprobante.",
+    prompt: "/cobrar Genera el cobro de la instalación de [negocio] por [monto].",
+  },
+  {
+    stage: "Retener",
+    title: "Reporte de valor",
+    command: "/reporte",
+    description: "El informe mensual que justifica la mensualidad.",
+    prompt: "/reporte Haz el reporte del mes del bot de [negocio] para mandárselo.",
+  },
+  {
+    stage: "Retener",
+    title: "Mantenimiento",
+    command: "/mantenimiento",
+    description: "Salud, limpieza de conocimiento y huecos, antes de que el cliente lo note.",
+    prompt: "/mantenimiento Dale mantenimiento al bot de [negocio].",
   },
 ];

@@ -27,30 +27,33 @@ Cada fase deja algo **funcionando y probado**. Los IDs remiten al [mapa funciona
 - [x] Botones tocables opt-in en web, Telegram y Probar bot (A9)
 - [x] Exportar leads y conversaciones en CSV/JSON (A8)
 
-## Fase 3 · Canales de Meta y multimedia
+## Fase 3 · Canales de Meta y multimedia ✅
 
-- [ ] WhatsApp Cloud API con verificación de firma (C3) y Twilio (C4)
-- [ ] Instagram + Messenger con un solo webhook (C5)
-- [ ] Notas de voz con Whisper en Workers AI (A4/B5) y visión de imágenes (B5)
-- [ ] Avisos de handoff por Telegram/correo/WhatsApp; pausa automática si el dueño contesta desde su app (B3)
-- [ ] Pestaña Conexiones con estado verde/rojo (D11)
+- [x] WhatsApp Cloud API con verificación de token y firma `X-Hub-Signature-256` (C3) y Twilio con `X-Twilio-Signature` (C4)
+- [x] Instagram + Messenger con un solo webhook de Meta (C5)
+- [x] Notas de voz con Whisper en Workers AI (A4/B5) y visión de imágenes (B5)
+- [x] Avisos al dueño por Telegram y correo; pausa automática cuando una persona responde desde la bandeja de Meta (B3)
+- [x] Botones nativos por canal y ventana de 24 h de WhatsApp con plantillas
+- [x] Pestaña Conexiones con estado, webhook y secretos faltantes (D11)
+- [ ] Pausa automática cuando el dueño responde desde su app de WhatsApp Business (requiere coexistencia del proveedor)
 
-## Fase 4 · Superpoderes asíncronos (Cron Triggers)
+## Fase 4 · Superpoderes asíncronos (Cron Triggers) ✅
 
-- [ ] Cierre de conversación tras 3 h de silencio
-- [ ] Vigilante: analista IA en 8 dimensiones + alertas + watchdog 3/30 min con freno de 6 h (B2, D7)
-- [ ] Cazador de ventas con ventana 3–20 h, 1 toque de por vida, 30/día (B4)
-- [ ] Encuestas 1–5 (B9), Recupera no-shows (B10), Pide reseñas (B11)
-- [ ] Reporte nocturno (B7); Estadísticas día a día (D8)
-- [ ] Costos del mes + tope de gasto que frena la IA al llegar (D9)
+- [x] Cierre de conversación tras 3 h de silencio (cron cada 15 min)
+- [x] Vigilante: analista IA con salida estructurada, memoria del cliente, alertas y watchdog 3/30 min con freno de 6 h (B2, D7)
+- [x] Cazador de ventas con ventana 3–20 h, 1 toque de por vida (índice único), tope diario (B4)
+- [x] Encuestas 1–5 (B9), Recupera no-shows (B10), Pide reseñas (B11)
+- [x] Reporte nocturno en la zona horaria del negocio (B7); Estadísticas día a día (D8)
+- [x] Costos del mes por modelo + tope de gasto que frena la IA al llegar (D9)
 
-## Fase 5 · Integraciones de negocio
+## Fase 5 · Integraciones de negocio ✅
 
-- [ ] Agenda: Cal.com y Google Calendar con servicios agendables y duración (C8)
-- [ ] Cobros con Stripe: link de pago + webhook de confirmación (B12)
-- [ ] Galería en R2: fotos, videos y audios con "cuándo usarlo" (B13)
-- [ ] Herramientas propias del dueño en `member/tools.local.ts` que sobreviven actualizaciones
-- [ ] Plantillas de WhatsApp (HSM) y Campañas a segmentos (C7, D10)
+- [x] Agenda: Cal.com v2 (disponibilidad y reserva) y recordatorio ~24 h antes (C8)
+- [x] Cobros con Stripe Checkout: link de pago, monedas sin decimales, webhook firmado e idempotente (B12)
+- [x] Galería en R2: fotos, videos, audios y PDFs con "cuándo usarlo" (B13)
+- [x] Herramientas propias del dueño en `apps/bot/src/member/tools.ts`
+- [x] Plantillas de WhatsApp (recordatorio, no-shows, campañas) y Campañas por segmento (C7, D10)
+- [ ] Google Calendar y Calendly como alternativas a Cal.com
 
 ## Fase 6 · Giros y personalidad
 
@@ -64,11 +67,14 @@ Cada fase deja algo **funcionando y probado**. Los IDs remiten al [mapa funciona
 - [ ] Usuarios con rol Administrador/Equipo, invitaciones de 7 días, visibilidad por sección, bitácora, asignar chats, recuperar contraseña (D13)
 - [ ] White-label: logo, colores, fuente, 3 estilos, textos del login, ocultar tabs, dominio propio (D14)
 
-## Fase 8 · HQ multi-bot, CLI y skills
+## Fase 8 · Modo agencia, CLI y skills (en curso)
 
-- [ ] CLI: `init`, `install <giro>`, `update` (respeta `member/`, respalda), `doctor`, `pair`, `delete`
-- [ ] HQ: mis bots, estadísticas y clientes agregados en vivo, Modo Agencia con pipeline (E1–E5)
-- [ ] Skills para Claude Code: configurar, reporte, afinar, prompt, cotizar, propuesta, cobrar…
+- [x] Modo agencia: cualquier bot es tu central; portafolio con estado y métricas en vivo, bandeja de leads de todos los bots, ingreso mensual y pipeline con prompts (E1–E4)
+- [x] Token de agencia por bot (`AGENCY_TOKEN`, Bearer) para operar bots de clientes
+- [x] 18 skills para Claude Code (configurar, conectar, superpoderes, conocimiento, prompt, afinar, reporte, mantenimiento, cliente misterioso, cliente nuevo, cotizar, propuesta, ROI, demo, cobrar…)
+- [x] CLI de operación `pnpm yunque`
+- [ ] CLI de instalación: `init`, `install <giro>`, `update` (respaldo), `doctor`, `delete`
+- [ ] Equipo de agencia (colaboradores con permisos) (E5)
 
 ## Fase 9 · App móvil (opcional)
 

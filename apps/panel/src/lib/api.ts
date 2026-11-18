@@ -1,8 +1,18 @@
 import type {
+  AgencyClientDto,
+  AgencyClientInput,
+  AgencyLeadDto,
+  AppointmentDto,
+  AutomationReportDto,
+  CampaignDto,
+  CampaignInput,
   ConnectionsDto,
   ConversationDetailDto,
   ConversationFilter,
   ConversationListItemDto,
+  CostsDto,
+  GalleryItemDto,
+  InsightsDto,
   KbDocumentDetailDto,
   KbDocumentDto,
   KbSearchResultDto,
@@ -11,9 +21,11 @@ import type {
   LeadDto,
   LeadStatus,
   MessageDto,
+  PaymentDto,
   PlaygroundReplyDto,
   SettingsDto,
   SettingsUpdate,
+  StatsDto,
   SummaryDto,
   TicketDto,
 } from "@yunque/core";
@@ -34,7 +46,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`/admin/api${path}`, {
     credentials: "same-origin",
     ...init,
-    headers: { ...(init.body ? { "content-type": "application/json" } : {}), ...init.headers },
+    headers: {
+      ...(init.body && !(init.body instanceof FormData)
+        ? { "content-type": "application/json" }
+        : {}),
+      ...init.headers,
+    },
   });
   const body = (await res.json().catch(() => ({}))) as { error?: string };
   if (!res.ok) {
@@ -82,6 +99,31 @@ export const api = {
 
   settings: () => request<SettingsDto>("/settings"),
   connections: () => request<ConnectionsDto>("/connections"),
+
+  stats: (days: number) => request<StatsDto>(`/stats?days=${days}`),
+  costs: () => request<CostsDto>("/costs"),
+  insights: (filter: "all" | "upset" | "open_sale" | "low") =>
+    request<InsightsDto>(`/insights?filter=${filter}`),
+  runAutomation: () => post<AutomationReportDto>("/automation/run"),
+
+  appointments: () => request<{ appointments: AppointmentDto[] }>("/appointments"),
+  payments: () => request<{ payments: PaymentDto[] }>("/payments"),
+
+  gallery: () => request<{ items: GalleryItemDto[]; storage: boolean }>("/gallery"),
+  galleryUpload: (form: FormData) =>
+    request<{ item: GalleryItemDto }>("/gallery", { method: "POST", body: form }),
+  galleryDelete: (id: string) => request<{ ok: true }>(`/gallery/${id}`, { method: "DELETE" }),
+
+  campaigns: () => request<{ campaigns: CampaignDto[] }>("/campaigns"),
+  campaignCreate: (input: CampaignInput) => post<{ id: string }>("/campaigns", input),
+  campaignSend: (id: string) => post<{ ok: true; sent: number }>(`/campaigns/${id}/send`),
+
+  agencyClients: () => request<{ clients: AgencyClientDto[] }>("/agency/clients"),
+  agencyAdd: (input: AgencyClientInput) =>
+    post<{ client: AgencyClientDto }>("/agency/clients", input),
+  agencyRemove: (id: string) =>
+    request<{ ok: true }>(`/agency/clients/${id}`, { method: "DELETE" }),
+  agencyLeads: () => request<{ leads: AgencyLeadDto[]; failed: string[] }>("/agency/leads"),
   saveSettings: (update: SettingsUpdate) =>
     request<SettingsDto>("/settings", { method: "PUT", body: JSON.stringify(update) }),
 

@@ -93,6 +93,11 @@ export function logout(c: Context<AppEnv>): Response {
 }
 
 export async function isAuthenticated(c: Context<AppEnv>): Promise<boolean> {
+  // Central de agencia: token propio por bot, enviado como Bearer.
+  const bearer = c.req.header("authorization")?.match(/^Bearer (.+)$/)?.[1];
+  if (bearer && c.env.AGENCY_TOKEN && c.env.AGENCY_TOKEN.length >= 16) {
+    return timingSafeEqual(bearer, c.env.AGENCY_TOKEN);
+  }
   const password = c.env.DASHBOARD_PASSWORD;
   const token = getCookie(c, SESSION_COOKIE);
   if (!password || !token) return false;

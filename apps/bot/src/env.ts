@@ -50,6 +50,9 @@ export interface Env {
   CALCOM_API_KEY?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
+
+  /** Token para que tu central de agencia lea y opere este bot (Authorization: Bearer). */
+  AGENCY_TOKEN?: string;
 }
 
 export const APP_VERSION = "0.1.0";

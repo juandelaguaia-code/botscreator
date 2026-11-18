@@ -3,8 +3,11 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout.js";
 import { Spinner } from "./components/ui.js";
 import { api, UNAUTHORIZED_EVENT } from "./lib/api.js";
+import { AgencyPage } from "./pages/Agency.js";
+import { CampaignsPage, GalleryPage, SalesPage } from "./pages/Business.js";
 import { CommandsPage } from "./pages/Commands.js";
 import { ConnectionsPage } from "./pages/Connections.js";
+import { AnalystPage, CostsPage, StatsPage } from "./pages/Growth.js";
 import { ImprovementsPage } from "./pages/Improvements.js";
 import { InboxPage } from "./pages/Inbox.js";
 import { KnowledgePage } from "./pages/Knowledge.js";
@@ -74,6 +77,13 @@ export function App() {
         <Route path="/tickets" element={<TicketsPage />} />
         <Route path="/conocimiento" element={<KnowledgePage />} />
         <Route path="/conexiones" element={<ConnectionsPage />} />
+        <Route path="/analista" element={<AnalystPage />} />
+        <Route path="/estadisticas" element={<StatsPage />} />
+        <Route path="/costos" element={<CostsPage />} />
+        <Route path="/campanas" element={<CampaignsPage />} />
+        <Route path="/galeria" element={<GalleryPage />} />
+        <Route path="/agenda" element={<SalesPage />} />
+        <Route path="/agencia" element={<AgencyPage />} />
         <Route path="/mejoras" element={<ImprovementsPage />} />
         <Route path="/probar" element={<PlaygroundPage />} />
         <Route path="/superpoderes" element={<SuperpowersPage />} />

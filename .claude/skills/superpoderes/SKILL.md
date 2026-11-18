@@ -1,7 +1,7 @@
 ---
 
 name: superpoderes
-description: Enciende, apaga y ajusta los superpoderes del bot (Blindaje anti-invento, handoff, botones, voz, idioma, cerebro de IA) y explica cuáles están disponibles y cuáles vienen en próximas fases. Úsala con "activa los superpoderes", "configura el blindaje", "prende los botones", "cambia el modelo", "qué superpoderes tengo".
+description: Enciende, apaga y ajusta los superpoderes del bot (Blindaje anti-invento, handoff, botones, voz, idioma, cerebro de IA) y explica cómo se configura cada uno. Úsala con "activa los superpoderes", "configura el blindaje", "prende los botones", "cambia el modelo", "qué superpoderes tengo".
 ---
 
 # Superpoderes
@@ -40,7 +40,27 @@ Catálogo completo con estado y números: `docs/05-superpoderes.md`. Lee la fila
   en el perfil o en conocimiento; agrégalo antes de bajar el umbral.
 - **Proveedor sin llave** → el panel lo marca "falta la llave": guía `wrangler secret put <PROVEEDOR>_API_KEY`.
 
-## Próximas fases (no prometer como activos)
+## Superpoderes automáticos (en `settings.automation`, corren cada 15 min)
 
-Vigilante con IA, Cazador de ventas, Oído y vista, Reportes automáticos, Encuestas, Recupera no-shows,
-Pide reseñas, Cobros por WhatsApp y Galería: ver fase y alcance en `docs/03-roadmap.md`.
+| Superpoder           | Campo                            | Nota                                                      |
+| -------------------- | -------------------------------- | --------------------------------------------------------- |
+| Vigilante            | `vigilante`                      | Analiza al cerrar (3 h de silencio); ver pestaña Analista |
+| Cazador de ventas    | `hunter`, `hunterDailyMax`       | 1 toque por conversación, ventana 3–20 h                  |
+| Encuestas            | `surveys`                        | 1–5 al cerrar; calificación baja → te avisa               |
+| Recupera no-shows    | `noShows`, `noShowAfterDays`     | WhatsApp necesita plantilla (`whatsappTemplates.noShow`)  |
+| Pide reseñas         | `reviews` + `profile.reviewUrl`  | solo a clientes contentos, una vez por cliente            |
+| Recordatorio de cita | `reminders`                      | ~24 h antes; WhatsApp con `whatsappTemplates.reminder`    |
+| Reporte nocturno     | `dailyReport`, `dailyReportHour` | por Telegram o correo                                     |
+| Tope de gasto        | `monthlyBudgetUsd`               | al llegar, sin IA y todo al equipo                        |
+
+Para probar sin esperar el cron: `curl -X POST <url>/admin/api/automation/run` con sesión, o «Analizar ahora» en
+el Analista.
+
+## Integraciones
+
+- **Agenda (Cal.com):** `settings.booking = { enabled: true, eventTypeId }` + secreto `CALCOM_API_KEY`.
+- **Cobros (Stripe):** `settings.payments = { enabled, currency, maxAmount }` + `STRIPE_SECRET_KEY` y
+  `STRIPE_WEBHOOK_SECRET`; webhook en Stripe a `/webhooks/stripe` (evento `checkout.session.completed`).
+- **Galería:** pestaña Galería del panel (requiere el bucket R2 `MEDIA` y `PUBLIC_URL`).
+
+Lista completa de cuentas y secretos: `docs/06-cuentas-y-secretos.md`.
