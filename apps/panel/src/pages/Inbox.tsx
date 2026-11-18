@@ -117,6 +117,7 @@ export function InboxPage() {
                       {c.needsHuman ? <Badge tone="amber">Te necesita</Badge> : null}
                       {c.pausedUntil ? <Badge tone="blue">Humano al mando</Badge> : null}
                       {c.isLead ? <Badge tone="green">Interesado</Badge> : null}
+                      {c.assignedTo ? <Badge>→ {c.assignedTo.name}</Badge> : null}
                       {c.unread > 0 ? <Badge tone="red">{c.unread}</Badge> : null}
                     </div>
                   </Link>
@@ -157,6 +158,7 @@ const ROLE_LABEL: Record<MessageDto["role"], string> = {
 function Thread({ id, onChanged }: { id: string; onChanged: () => Promise<void> }) {
   const navigate = useNavigate();
   const { data, error, loading, reload } = useApi(() => api.conversation(id), id, 4000);
+  const assignees = useApi(() => api.assignees(), "assignees");
   const [text, setText] = useState("");
   const [mode, setMode] = useState<"reply" | "note">("reply");
   const [busy, setBusy] = useState(false);
@@ -224,6 +226,22 @@ function Thread({ id, onChanged }: { id: string; onChanged: () => Promise<void> 
             {paused && data.pausedUntil ? pauseLabel(data.pausedUntil) : "bot activo"}
           </p>
         </div>
+        {assignees.data?.users.length ? (
+          <Select
+            aria-label="Asignado a"
+            className="w-auto"
+            value={data.assignedTo?.id ?? ""}
+            disabled={busy}
+            onChange={(e) => void run(() => api.assign(id, e.target.value || null))}
+          >
+            <option value="">Sin asignar</option>
+            {assignees.data.users.map((u) => (
+              <option key={u.id} value={u.id}>
+                Asignado a {u.name}
+              </option>
+            ))}
+          </Select>
+        ) : null}
         {paused || data.needsHuman ? (
           <Button variant="secondary" disabled={busy} onClick={() => run(() => api.resume(id))}>
             Devolver al bot

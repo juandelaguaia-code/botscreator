@@ -89,6 +89,7 @@ export interface ConversationListItemDto {
   needsHuman: boolean;
   pausedUntil: number | null;
   isLead: boolean;
+  assignedTo: { id: string; name: string } | null;
   status: "open" | "closed";
 }
 
@@ -450,4 +451,70 @@ export interface AgencyClientDto {
 export interface AgencyLeadDto extends LeadDto {
   clientId: string;
   clientName: string;
+}
+
+// ---------- equipo y marca blanca (fase 7) ----------
+
+export type UserRole = "admin" | "team";
+
+export const teamInviteSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  email: z.string().trim().toLowerCase().email().max(200),
+  role: z.enum(["admin", "team"]),
+});
+
+export const userUpdateSchema = z.object({
+  role: z.enum(["admin", "team"]).optional(),
+  status: z.enum(["active", "disabled"]).optional(),
+});
+
+export const accessAcceptSchema = z.object({
+  password: z.string().min(8).max(200),
+  whatsapp: z.string().trim().max(40).optional(),
+  position: z.string().trim().max(80).optional(),
+});
+
+export const loginWithEmailSchema = z.object({
+  email: z.string().trim().toLowerCase().email().max(200),
+  password: z.string().min(1).max(200),
+});
+
+export const assignInputSchema = z.object({ userId: z.string().max(64).nullable() });
+
+export interface TeamUserDto {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  status: "invited" | "active" | "disabled";
+  whatsapp: string | null;
+  position: string | null;
+  createdAt: number;
+  lastLoginAt: number | null;
+}
+
+export interface AuditEntryDto {
+  id: string;
+  actorName: string | null;
+  action: string;
+  detail: string | null;
+  createdAt: number;
+}
+
+export interface SessionDto {
+  authenticated: boolean;
+  botName: string;
+  hasPassword: boolean;
+  actor: { id: string; name: string; role: "owner" | UserRole } | null;
+  /** Pestañas que este acceso puede abrir; `null` = todas. */
+  allowedTabs: string[] | null;
+  branding: {
+    panelName: string;
+    logoUrl: string;
+    accentColor: string;
+    style: "nimbus" | "onyx" | "terra";
+    font: string;
+    loginTitle: string;
+    loginSubtitle: string;
+  };
 }

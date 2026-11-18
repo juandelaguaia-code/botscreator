@@ -19,3 +19,50 @@ body,
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
 }
+
+/* ---------- estilos de marca blanca ----------
+   Nimbus = el claro por defecto. Onyx = oscuro moderno. Terra = cálido editorial.
+   Solo cambian tokens: componentes y rutas son los mismos. */
+
+[data-style="onyx"] {
+  color-scheme: dark;
+  --color-white: #16181d;
+  --color-slate-50: #0f1115;
+  --color-slate-100: #1d2027;
+  --color-slate-200: #2a2e37;
+  --color-slate-300: #3a3f4b;
+  --color-slate-400: #7b8290;
+  --color-slate-500: #9aa1ad;
+  --color-slate-600: #c3c8d1;
+  --color-slate-700: #dde1e7;
+  --color-slate-800: #eceff3;
+  --color-slate-900: #f6f7f9;
+}
+[data-style="onyx"] .text-white {
+  color: #ffffff;
+}
+[data-style="onyx"] .bg-slate-900 {
+  background-color: #e5e7eb;
+  color: #0f1115;
+}
+
+[data-style="terra"] {
+  --color-white: #fffaf3;
+  --color-slate-50: #f6efe4;
+  --color-slate-100: #efe5d6;
+  --color-slate-200: #e2d4c0;
+  --color-slate-300: #cdb99f;
+  --color-slate-400: #a08c74;
+  --color-slate-500: #7d6a55;
+  --color-slate-600: #5f4f3f;
+  --color-slate-700: #483b2f;
+  --color-slate-800: #33291f;
+  --color-slate-900: #221b14;
+}
+[data-style="terra"] h1,
+[data-style="terra"] h2 {
+  font-family: Georgia, "Times New Roman", serif;
+}
+[data-style="terra"] .rounded-xl {
+  box-shadow: 3px 3px 0 var(--color-slate-300);
+}

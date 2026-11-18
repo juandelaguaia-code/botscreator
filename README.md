@@ -6,12 +6,13 @@ Cloudflare, con **tus** llaves de IA, y trae su panel de administración en `/ad
 > _Yunque_ es el nombre en clave del proyecto; la marca visible del panel se configura por bot.
 > Implementación propia e independiente: no contiene código, textos ni marca de otras plataformas.
 
-## Qué hace hoy (fases 1 a 5 y Modo agencia)
+## Qué hace hoy (fases 1 a 7 y Modo agencia)
 
 - **Canales:** chat web (una línea), Telegram, WhatsApp (Cloud API de Meta o Twilio), Instagram y Messenger, con botones nativos y ventana de 24 h de WhatsApp.
 - **Cerebro:** Claude por defecto (ChatGPT, Grok o Gemini opcionales), niveles Económico/Equilibrado/Máximo, base de conocimiento con Workers AI + Vectorize, notas de voz e imágenes.
 - **Los 13 superpoderes:** Blindaje anti-invento, Vigilante, Handoff, Cazador de ventas, Oído y vista, Voz de marca, Reportes nocturnos, Multi-idioma, Encuestas, Recupera no-shows, Pide reseñas, Cobros con Stripe y Galería, más botones tocables, agenda con Cal.com, recordatorios, campañas y tope de gasto.
-- **Panel `/admin`:** Resumen, Bandeja, Clientes, Tickets, Agenda y cobros, Analista, Estadísticas, Costos, Campañas, Mejoras, Conocimiento, Galería, Superpoderes, Conexiones, Probar bot, Comandos, Modo agencia y Configuración.
+- **Panel `/admin`:** Resumen, Bandeja, Clientes, Tickets, Agenda y cobros, Analista, Estadísticas, Costos, Campañas, Mejoras, Conocimiento, Galería, Superpoderes, Conexiones, Probar bot, Comandos, Modo agencia, Equipo y Configuración.
+- **Equipo y marca blanca:** accesos personales con rol Administrador o Equipo, invitaciones por link, permisos por sección, bitácora y chats asignados; el panel con tu nombre, logo, color, estilo, tipografía y dominio.
 - **Modo agencia:** cualquier bot es tu central: portafolio de bots de clientes en vivo, leads de todos y pipeline comercial.
 
 Estado por fase en el [roadmap](docs/03-roadmap.md); especificación en el [mapa funcional](docs/01-mapa-funcional.md);
@@ -19,9 +20,9 @@ qué cuentas y secretos necesitas para producción en [docs/06-cuentas-y-secreto
 
 ## Agentes y superpoderes
 
-- **18 agentes** (skills de Claude Code) en `.claude/skills/`: configurar el bot, conectar canales,
-  superpoderes, base de conocimiento, prompt, afinar, reportes, mantenimiento, cliente misterioso y modo
-  agencia (cliente nuevo, ROI, demo, cotizar, propuesta, cobrar). Catálogo y reglas: [docs/04-agentes.md](docs/04-agentes.md).
+- **27 agentes** (skills de Claude Code) en `.claude/skills/`: configurar el bot, conectar canales,
+  superpoderes, base de conocimiento, prompt y sus herramientas, afinar, reportes, mantenimiento, cliente
+  misterioso, equipo y marca blanca, y modo agencia (cliente nuevo, ROI, demo, cotizar, propuesta, cobrar). Catálogo y reglas: [docs/04-agentes.md](docs/04-agentes.md).
 - **CLI de operación** `pnpm yunque <comando>` que usan los agentes (`pnpm yunque ayuda`).
 - **Superpoderes**: estado, reglas y configuración en [docs/05-superpoderes.md](docs/05-superpoderes.md).
 - En el panel, **Superpoderes** y **Comandos** muestran todo con prompts listos para copiar.

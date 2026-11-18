@@ -35,6 +35,8 @@ pnpm yunque ayuda
 | `conocimiento` · `:agregar` · `:importar` · `:buscar` · `:borrar` · `:reindexar` | Base de conocimiento                                            |
 | `huecos [estado]` · `hueco:responder` · `hueco:ignorar`                          | Radar de huecos                                                 |
 | `exportar <archivo>`                                                             | `leads.csv`, `leads.json`, `messages.csv`, `conversations.json` |
+| `equipo` · `equipo:invitar` · `equipo:link` · `equipo:desactivar`                | Accesos personales al panel                                     |
+| `equipo:secciones </ruta,…>` · `bitacora`                                        | Qué ve el rol Equipo y quién cambió qué                         |
 
 ## Catálogo de agentes
 
@@ -58,6 +60,9 @@ pnpm yunque ayuda
 | `/exportar`           | Leads y conversaciones a CSV/JSON                                             | solo lectura                   |
 | `/mantenimiento`      | Semáforo de salud y limpieza                                                  | solo lectura salvo lo aprobado |
 | `/cliente-misterioso` | Clientes simulados y boleta                                                   | crea chats de prueba           |
+| `/equipo`             | Invitar personas, roles, links nuevos y bitácora                              | accesos (con tu sí)            |
+| `/whitelabel`         | Panel con tu nombre, logo, color, estilo y dominio propio                     | marca y wrangler (con tu sí)   |
+| `/ocultar-tabs`       | Esconder secciones a los accesos personales                                   | ajustes (con tu sí)            |
 | `/cliente-nuevo`      | Bot aislado para un negocio cliente (agencia)                                 | crea recursos (con tu sí)      |
 | `/cotizar`            | Precio con costos reales y piso de margen (agencia)                           | —                              |
 | `/propuesta`          | Documento comercial para cerrar (agencia)                                     | —                              |

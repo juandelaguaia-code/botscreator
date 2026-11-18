@@ -3,6 +3,7 @@ import type {
   AgencyClientInput,
   AgencyLeadDto,
   AppointmentDto,
+  AuditEntryDto,
   AutomationReportDto,
   BusinessProfile,
   CampaignDto,
@@ -28,11 +29,14 @@ import type {
   PlaygroundReplyDto,
   PromptPreviewDto,
   PromptVersionDto,
+  SessionDto,
   SettingsDto,
   SettingsUpdate,
   StatsDto,
   SummaryDto,
+  TeamUserDto,
   TicketDto,
+  UserRole,
 } from "@yunque/core";
 
 export class ApiError extends Error {
@@ -71,9 +75,41 @@ const post = <T>(path: string, data: unknown = {}) =>
   request<T>(path, { method: "POST", body: JSON.stringify(data) });
 
 export const api = {
-  session: () =>
-    request<{ authenticated: boolean; botName: string; hasPassword: boolean }>("/session"),
-  login: (password: string) => post<{ ok: true }>("/login", { password }),
+  session: () => request<SessionDto>("/session"),
+  login: (password: string, email?: string) =>
+    post<{ ok: true }>("/login", email ? { email, password } : { password }),
+  forgot: (email: string) => post<{ ok: true }>("/forgot", { email }),
+  accessInfo: (token: string) =>
+    request<{ valid: boolean; kind?: "invite" | "reset"; name?: string; email?: string }>(
+      `/access/${token}`,
+    ),
+  accessAccept: (
+    token: string,
+    input: { password: string; whatsapp?: string; position?: string },
+  ) => post<{ ok: true }>(`/access/${token}`, input),
+
+  team: () => request<{ users: TeamUserDto[]; teamSections: string[] }>("/team"),
+  teamInvite: (input: { name: string; email: string; role: UserRole }) =>
+    post<{ user: TeamUserDto; link: string }>("/team/invites", input),
+  teamLink: (id: string) =>
+    post<{ link: string; kind: "invite" | "reset" }>(`/team/users/${id}/link`),
+  teamUpdate: (id: string, patch: { role?: UserRole; status?: "active" | "disabled" }) =>
+    request<{ user: TeamUserDto }>(`/team/users/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+  teamRemove: (id: string) => request<{ ok: true }>(`/team/users/${id}`, { method: "DELETE" }),
+  teamSections: (sections: string[]) =>
+    request<{ teamSections: string[] }>("/team/sections", {
+      method: "PUT",
+      body: JSON.stringify({ sections }),
+    }),
+  teamAudit: () => request<{ entries: AuditEntryDto[] }>("/team/audit"),
+  assignees: () => request<{ users: Array<{ id: string; name: string }> }>("/assignees"),
+  assign: (conversationId: string, userId: string | null) =>
+    post<{ ok: true }>(`/conversations/${conversationId}/assign`, { userId }),
+  uploadLogo: (form: FormData) =>
+    request<{ logoUrl: string }>("/branding/logo", { method: "POST", body: form }),
   logout: () => post<{ ok: true }>("/logout"),
 
   summary: () => request<SummaryDto>("/summary"),

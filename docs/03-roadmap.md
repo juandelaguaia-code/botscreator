@@ -63,16 +63,17 @@ Cada fase deja algo **funcionando y probado**. Los IDs remiten al [mapa funciona
 - [x] Prompt: versiones y deshacer (automáticas al guardar), instrucciones por canal, ejemplos few-shot y vista por secciones (D15)
 - [x] Skills: `/re-nichar`, `/versionar-prompt`, `/prompt-por-canal`, `/ejemplos-prompt`, `/lab-prompt`, `/limpiar-prompt`
 
-## Fase 7 · Equipo y marca blanca
+## Fase 7 · Equipo y marca blanca ✅
 
-- [ ] Usuarios con rol Administrador/Equipo, invitaciones de 7 días, visibilidad por sección, bitácora, asignar chats, recuperar contraseña (D13)
-- [ ] White-label: logo, colores, fuente, 3 estilos, textos del login, ocultar tabs, dominio propio (D14)
+- [x] Usuarios con rol Administrador/Equipo, invitaciones de 7 días y un uso, visibilidad por sección (también en la API), bitácora, asignar chats con aviso por correo, recuperar contraseña con link de 1 hora y bloqueo por IP y por correo (D13)
+- [x] White-label: nombre, logo subido a R2, color de acento, 12 fuentes, 3 estilos (Nimbus, Onyx, Terra), textos del login, pestañas ocultas y dominio propio guiado por `/whitelabel` (D14)
+- [x] Skills `/equipo`, `/whitelabel`, `/ocultar-tabs` y comandos `pnpm yunque equipo*` / `bitacora`
 
 ## Fase 8 · Modo agencia, CLI y skills (en curso)
 
 - [x] Modo agencia: cualquier bot es tu central; portafolio con estado y métricas en vivo, bandeja de leads de todos los bots, ingreso mensual y pipeline con prompts (E1–E4)
 - [x] Token de agencia por bot (`AGENCY_TOKEN`, Bearer) para operar bots de clientes
-- [x] 18 skills para Claude Code (configurar, conectar, superpoderes, conocimiento, prompt, afinar, reporte, mantenimiento, cliente misterioso, cliente nuevo, cotizar, propuesta, ROI, demo, cobrar…)
+- [x] 27 skills para Claude Code (configurar, conectar, superpoderes, conocimiento, prompt y sus herramientas, afinar, reporte, mantenimiento, cliente misterioso, equipo, marca blanca, cliente nuevo, cotizar, propuesta, ROI, demo, cobrar…)
 - [x] CLI de operación `pnpm yunque`
 - [ ] CLI de instalación: `init`, `install <giro>`, `update` (respaldo), `doctor`, `delete`
 - [ ] Equipo de agencia (colaboradores con permisos) (E5)

@@ -32,6 +32,7 @@ export interface ConversationRecord {
 }
 
 export interface ConversationListRow extends ConversationRecord {
+  assignedTo: { id: string; name: string } | null;
   contactName: string | null;
   contactExternalId: string;
   isLead: boolean;

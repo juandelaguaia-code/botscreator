@@ -263,6 +263,55 @@ const COMMANDS = {
     run: async ([id]) =>
       print(await api(`/gaps/${need(id, "hueco:ignorar <id>")}/ignore`, { method: "POST" })),
   },
+  equipo: {
+    help: "Accesos personales y secciones del rol Equipo",
+    run: async () => print(await api("/team")),
+  },
+  "equipo:invitar": {
+    help: '"<nombre>" <correo> [admin|team] Invita y devuelve el link (7 días)',
+    run: async ([name, email, role = "team"]) => {
+      const usage = 'equipo:invitar "<nombre>" <correo> [admin|team]';
+      if (!["admin", "team"].includes(role)) fail(`Uso: ${usage}`);
+      const r = await api("/team/invites", {
+        method: "POST",
+        body: { name: need(name, usage), email: need(email, usage), role },
+      });
+      console.log(`✓ ${r.user.name} invitado. Link (un solo uso, 7 días):\n${r.link}`);
+    },
+  },
+  "equipo:link": {
+    help: "<id> Link nuevo de invitación o de cambio de contraseña",
+    run: async ([id]) =>
+      print(await api(`/team/users/${need(id, "equipo:link <id>")}/link`, { method: "POST" })),
+  },
+  "equipo:desactivar": {
+    help: "<id> Corta el acceso (y sus sesiones abiertas)",
+    run: async ([id]) =>
+      print(
+        await api(`/team/users/${need(id, "equipo:desactivar <id>")}`, {
+          method: "PATCH",
+          body: { status: "disabled" },
+        }),
+      ),
+  },
+  "equipo:secciones": {
+    help: "</ruta,/ruta> Qué ve el rol Equipo (ej. /,/bandeja,/clientes)",
+    run: async ([list]) =>
+      print(
+        await api("/team/sections", {
+          method: "PUT",
+          body: {
+            sections: need(list, "equipo:secciones /,/bandeja")
+              .split(",")
+              .map((s) => s.trim()),
+          },
+        }),
+      ),
+  },
+  bitacora: {
+    help: "Quién entró y qué cambió en el panel",
+    run: async () => print((await api("/team/audit")).entries),
+  },
   exportar: {
     help: "<leads.csv|leads.json|messages.csv|conversations.json> [salida]",
     run: async ([name, out]) => {

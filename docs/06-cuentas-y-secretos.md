@@ -40,6 +40,9 @@ La pestaña **Conexiones** del panel muestra qué falta de cada canal y la URL e
 | Telegram        | `TELEGRAM_BOT_TOKEN` + `OWNER_TELEGRAM_CHAT_ID`                              |
 | Correo (Resend) | `RESEND_API_KEY`, `OWNER_EMAIL`, `EMAIL_FROM` (dominio verificado en Resend) |
 
+El mismo correo (Resend) manda los links de "¿Olvidaste tu contraseña?" y el aviso de chat asignado al
+equipo. Sin correo configurado, el link de recuperación llega al Administrador como ticket en el panel.
+
 ## Integraciones
 
 | Superpoder             | Qué crear                                                                                                           | Secretos y ajustes                                                            |

@@ -11,6 +11,7 @@ import {
   type Tone,
 } from "@yunque/core";
 import { type ReactNode, useEffect, useState } from "react";
+import { BrandingSection } from "../components/BrandingSection.js";
 import {
   Button,
   Card,
@@ -879,6 +880,16 @@ export function SettingsPage({ onSaved }: { onSaved: () => void }) {
               />
             </div>
           ))}
+        </Section>
+
+        <Section
+          title="Marca blanca"
+          description="El panel con tu marca: nombre, logo, color, estilo y qué pestañas se ven. Se aplica al guardar."
+        >
+          <BrandingSection
+            branding={settings.branding}
+            onChange={(patch) => s({ branding: { ...settings.branding, ...patch } })}
+          />
         </Section>
 
         <Section title="Comportamiento">

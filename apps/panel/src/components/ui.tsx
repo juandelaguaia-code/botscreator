@@ -91,18 +91,28 @@ export function PageHeader({
 }
 
 const inputBase =
-  "w-full rounded-lg border-0 bg-white px-3 py-2 text-sm ring-1 ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-brand-500 focus:outline-none";
+  "rounded-lg border-0 bg-white px-3 py-2 text-sm ring-1 ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-brand-500 focus:outline-none";
+
+/** Ancho completo salvo que el llamador pida otro (`w-36`, `w-auto`…): así no compiten dos clases de ancho. */
+const width = (className?: string) => (className && /(^|\s)w-/.test(className) ? null : "w-full");
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={cx(inputBase, props.className)} />;
+  return <input {...props} className={cx(inputBase, width(props.className), props.className)} />;
 }
 
 export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea {...props} className={cx(inputBase, "resize-y", props.className)} />;
+  return (
+    <textarea
+      {...props}
+      className={cx(inputBase, width(props.className), "resize-y", props.className)}
+    />
+  );
 }
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={cx(inputBase, "pr-8", props.className)} />;
+  return (
+    <select {...props} className={cx(inputBase, width(props.className), "pr-8", props.className)} />
+  );
 }
 
 export function Field({

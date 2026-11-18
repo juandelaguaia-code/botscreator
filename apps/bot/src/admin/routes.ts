@@ -6,12 +6,14 @@ import {
   type ConversationFilter,
   leadUpdateSchema,
   loginInputSchema,
+  loginWithEmailSchema,
   noteInputSchema,
   type PlaygroundReplyDto,
   type PromptPreviewDto,
   pauseInputSchema,
   playgroundInputSchema,
   replyInputSchema,
+  type SessionDto,
   type SettingsDto,
   settingsUpdateSchema,
 } from "@yunque/core";
@@ -23,13 +25,15 @@ import { configuredProviders } from "../services.js";
 import type { AppEnv } from "../types.js";
 import { agencyApi } from "./agency.js";
 import { analyticsApi } from "./analytics.js";
-import { isAuthenticated, login, logout, requireAuth } from "./auth.js";
+import { allowedTabs, enforceTabs, login, logout, requireAuth, resolveActor } from "./auth.js";
+import { brandingApi } from "./branding.js";
 import { toConversationDto, toLeadDto, toMessageDto, toTicketDto } from "./dto.js";
 import { exportApi } from "./export.js";
 import { readJson } from "./http.js";
 import { integrationsApi } from "./integrations.js";
 import { knowledgeApi } from "./knowledge.js";
 import { promptApi, snapshotProfile } from "./prompt.js";
+import { accessApi, teamApi } from "./team.js";
 
 const FILTERS: ConversationFilter[] = ["all", "needs_human", "unread", "leads"];
 
@@ -38,25 +42,40 @@ export const adminApi = new Hono<AppEnv>();
 // ---------- sesión (públicas) ----------
 
 adminApi.post("/login", async (c) => {
-  const input = await readJson(c.req.raw, loginInputSchema);
-  if (!input) return c.json({ error: "Escribe la contraseña." }, 400);
-  return login(c, input.password);
+  const body = (await c.req.raw.json().catch(() => null)) as unknown;
+  const withEmail = loginWithEmailSchema.safeParse(body);
+  if (withEmail.success) return login(c, withEmail.data);
+  const master = loginInputSchema.safeParse(body);
+  if (!master.success) return c.json({ error: "Escribe la contraseña." }, 400);
+  return login(c, { password: master.data.password });
 });
 
 adminApi.post("/logout", (c) => logout(c));
 
 adminApi.get("/session", async (c) => {
-  const { profile } = await c.get("services").config();
-  return c.json({
-    authenticated: await isAuthenticated(c),
-    botName: profile.name,
+  const { profile, settings } = await c.get("services").config();
+  const actor = await resolveActor(c);
+  const { hiddenTabs: _hidden, ...branding } = settings.branding;
+  const dto: SessionDto = {
+    authenticated: actor !== null,
+    botName: settings.branding.panelName || profile.name,
     hasPassword: Boolean(c.env.DASHBOARD_PASSWORD),
-  });
+    actor,
+    allowedTabs: actor ? allowedTabs(actor, settings) : null,
+    branding,
+  };
+  return c.json(dto);
 });
+
+adminApi.route("/", accessApi);
 
 // ---------- todo lo demás requiere sesión ----------
 
 adminApi.use("*", requireAuth);
+adminApi.use("*", enforceTabs);
+
+adminApi.route("/", teamApi);
+adminApi.route("/", brandingApi);
 
 adminApi.route("/", knowledgeApi);
 adminApi.route("/export", exportApi);

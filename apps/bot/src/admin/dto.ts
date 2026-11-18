@@ -17,6 +17,7 @@ export function toConversationDto(r: ConversationListRow): ConversationListItemD
     needsHuman: r.needsHuman,
     pausedUntil: r.pausedUntil && r.pausedUntil > Date.now() ? r.pausedUntil : null,
     isLead: r.isLead,
+    assignedTo: r.assignedTo,
     status: r.status,
   };
 }

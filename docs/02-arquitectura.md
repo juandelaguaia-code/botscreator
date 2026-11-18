@@ -60,6 +60,9 @@ Canal (web / Telegram / WhatsApp…)
 | `tickets`        | Handoffs, huecos de conocimiento, avisos del sistema                      |
 | `llm_usage`      | Tokens y costo por llamada (pestaña Costos y tope de gasto)               |
 | `login_attempts` | Bloqueo tras 5 intentos fallidos (15 min)                                 |
+| `users`          | Accesos personales (rol, estado, hash de contraseña)                      |
+| `access_tokens`  | Links de invitación y recuperación (hash, vencimiento, uso)               |
+| `audit_log`      | Bitácora del panel: quién entró y qué cambió                              |
 
 Las migraciones son SQL plano versionado en `apps/bot/migrations` y se aplican con
 `wrangler d1 migrations apply`.
@@ -68,8 +71,15 @@ Las migraciones son SQL plano versionado en `apps/bot/migrations` y se aplican c
 
 - Llaves de IA y tokens de canal como **secretos de Cloudflare** (`wrangler secret put`), nunca
   en el repo ni en `settings`.
-- Panel: contraseña maestra (`DASHBOARD_PASSWORD`) → sesión firmada con HMAC-SHA256 en cookie
-  `HttpOnly; Secure; SameSite=Strict`. Comparación en tiempo constante. Bloqueo por IP.
+- Panel: contraseña maestra (`DASHBOARD_PASSWORD`, rol dueño) o accesos personales (correo + contraseña
+  con PBKDF2-SHA256, 100 000 iteraciones y sal propia) → sesión firmada con HMAC-SHA256 en cookie
+  `HttpOnly; Secure; SameSite=Strict`. Comparación en tiempo constante. Bloqueo por IP y por correo
+  (5 intentos, 15 min).
+- Roles: dueño (todo), Administrador (todo menos pestañas ocultas) y Equipo (secciones elegidas). El
+  middleware `enforceTabs` aplica los mismos permisos en la API, no solo en el menú. La sesión de un acceso
+  personal lleva una huella del hash de su contraseña: cambiarla o desactivar el acceso cierra sus sesiones.
+- Links de invitación (7 días) y recuperación (1 hora): de un solo uso y guardados como SHA-256, nunca
+  en claro. "¿Olvidaste tu contraseña?" responde igual exista o no el correo.
 - Webhooks: Telegram valida `X-Telegram-Bot-Api-Secret-Token`; Meta valida la firma
   `X-Hub-Signature-256` (fase 3).
 - Endpoint público del widget: límite de mensajes por conversación para frenar abuso.

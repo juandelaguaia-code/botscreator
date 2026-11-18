@@ -46,21 +46,27 @@ export const NAV: Array<{ title: string; items: NavItem[] }> = [
       { to: "/probar", label: "Probar bot", icon: "▶" },
       { to: "/comandos", label: "Comandos", icon: "⌘" },
       { to: "/agencia", label: "Modo agencia", icon: "◈" },
+      { to: "/equipo", label: "Equipo", icon: "☷" },
       { to: "/configuracion", label: "Configuración", icon: "⚙" },
     ],
   },
 ];
 
+const ROLE_LABEL = { owner: "Dueño", admin: "Administrador", team: "Equipo" } as const;
+
 export function Layout({
   botName,
   logoUrl,
-  hiddenTabs = [],
+  allowedTabs = null,
+  actor = null,
   onLogout,
   children,
 }: {
   botName: string;
   logoUrl?: string | null;
-  hiddenTabs?: string[];
+  /** Pestañas visibles para este acceso; `null` = todas. */
+  allowedTabs?: string[] | null;
+  actor?: { name: string; role: keyof typeof ROLE_LABEL } | null;
   onLogout: () => void;
   children: ReactNode;
 }) {
@@ -89,7 +95,7 @@ export function Layout({
         </div>
         <nav className="flex-1 space-y-4 overflow-y-auto p-3">
           {NAV.map((group) => {
-            const items = group.items.filter((i) => !hiddenTabs.includes(i.to));
+            const items = group.items.filter((i) => !allowedTabs || allowedTabs.includes(i.to));
             if (items.length === 0) return null;
             return (
               <div key={group.title}>
@@ -124,6 +130,13 @@ export function Layout({
           })}
         </nav>
         <div className="border-t border-slate-200 p-3">
+          {actor ? (
+            <p className="truncate px-3 pb-2 text-xs text-slate-500">
+              {actor.role === "owner"
+                ? "Dueño · contraseña maestra"
+                : `${actor.name} · ${ROLE_LABEL[actor.role]}`}
+            </p>
+          ) : null}
           <button
             type="button"
             onClick={onLogout}

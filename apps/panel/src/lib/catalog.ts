@@ -283,6 +283,11 @@ export const COMMAND_GROUPS: CommandGroup[] = [
         prompt: "pnpm yunque exportar leads.csv",
       },
       {
+        command: "pnpm yunque equipo:invitar",
+        description: "Invitar a alguien al panel con su propio acceso",
+        prompt: 'pnpm yunque equipo:invitar "Ana Pérez" ana@tunegocio.com team',
+      },
+      {
         command: "pnpm deploy",
         description: "Compilar el panel y desplegar el bot",
         prompt: "pnpm deploy",
@@ -403,6 +408,27 @@ export const COMMAND_GROUPS: CommandGroup[] = [
         command: "/cliente-misterioso",
         description: "Clientes simulados y boleta de calidad",
         prompt: skill("cliente-misterioso", "Pon a prueba mi bot antes de entregarlo."),
+      },
+    ],
+  },
+  {
+    title: "Agente · Equipo y marca blanca",
+    hint: "Accesos personales, permisos y el panel con la marca de tu agencia o negocio.",
+    items: [
+      {
+        command: "/equipo",
+        description: "Invitar personas, roles y qué ve cada una",
+        prompt: skill("equipo", "Invita a [nombre] con el rol Equipo para que atienda la bandeja."),
+      },
+      {
+        command: "/whitelabel",
+        description: "Panel con tu logo, color, estilo y dominio propio",
+        prompt: skill("whitelabel", "Pon el panel con la marca de mi agencia y en mi dominio."),
+      },
+      {
+        command: "/ocultar-tabs",
+        description: "Esconder secciones a los accesos personales",
+        prompt: skill("ocultar-tabs", "Oculta Costos y Modo agencia a mi cliente."),
       },
     ],
   },

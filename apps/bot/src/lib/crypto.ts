@@ -41,6 +41,10 @@ async function hmacKey(secret: string): Promise<CryptoKey> {
 export interface SessionPayload {
   sub: string;
   exp: number;
+  /** owner (contraseña maestra) · admin · team */
+  role?: string;
+  /** Huella de la contraseña del usuario: si cambia, la sesión deja de valer. */
+  h?: string;
 }
 
 /** Token de sesión firmado: `payload.firma`, ambos en base64url. */

@@ -15,6 +15,32 @@ export const modelModeSchema = z.enum(MODEL_MODES);
 export type ModelMode = z.infer<typeof modelModeSchema>;
 
 export const MODEL_TIERS = ["fast", "smart", "max"] as const;
+
+/** Fuentes de Google Fonts disponibles para la marca blanca. */
+export const BRAND_FONTS = [
+  "Inter",
+  "Poppins",
+  "Montserrat",
+  "DM Sans",
+  "Nunito",
+  "Lato",
+  "Open Sans",
+  "Raleway",
+  "Work Sans",
+  "Manrope",
+  "Playfair Display",
+  "Merriweather",
+] as const;
+
+/** Pestañas que el rol Equipo nunca puede abrir. */
+export const ADMIN_ONLY_TABS = [
+  "/configuracion",
+  "/conexiones",
+  "/costos",
+  "/agencia",
+  "/equipo",
+  "/prompt",
+] as const;
 export type ModelTier = (typeof MODEL_TIERS)[number];
 
 export const botSettingsSchema = z.object({
@@ -112,6 +138,40 @@ export const botSettingsSchema = z.object({
         .optional(),
     })
     .default({}),
+  /** Marca blanca del panel (logo, color, estilo, textos del login y pestañas ocultas). */
+  branding: z
+    .object({
+      panelName: z.string().trim().max(60).default(""),
+      logoUrl: z.string().trim().max(500).default(""),
+      /** Color de acento en hex (#1f8a5b). Vacío = el del estilo. */
+      accentColor: z
+        .string()
+        .trim()
+        .regex(/^#[0-9a-fA-F]{6}$/)
+        .or(z.literal(""))
+        .default(""),
+      style: z.enum(["nimbus", "onyx", "terra"]).default("nimbus"),
+      font: z.enum(BRAND_FONTS).default("Inter"),
+      loginTitle: z.string().trim().max(80).default(""),
+      loginSubtitle: z.string().trim().max(160).default(""),
+      /** Pestañas que no ven los accesos personales (la contraseña maestra ve todo). */
+      hiddenTabs: z.array(z.string().trim().max(40)).max(30).default([]),
+    })
+    .default({
+      panelName: "",
+      logoUrl: "",
+      accentColor: "",
+      style: "nimbus",
+      font: "Inter",
+      loginTitle: "",
+      loginSubtitle: "",
+      hiddenTabs: [],
+    }),
+  /** Secciones que puede abrir el rol Equipo. Configuración, Conexiones, Costos, Agencia y Equipo nunca. */
+  teamSections: z
+    .array(z.string().trim().max(40))
+    .max(30)
+    .default(["/", "/bandeja", "/clientes", "/tickets", "/agenda"]),
   /** Agenda: el bot consulta horarios libres y reserva en Cal.com (llave CALCOM_API_KEY como secreto). */
   booking: z
     .object({

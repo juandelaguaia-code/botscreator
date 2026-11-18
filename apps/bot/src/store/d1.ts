@@ -70,6 +70,9 @@ function toConversation(r: Row): ConversationRecord {
 function toConversationRow(r: Row): ConversationListRow {
   return {
     ...toConversation(r),
+    assignedTo: r.assigned_to
+      ? { id: String(r.assigned_to), name: String(r.assignee_name ?? "") }
+      : null,
     contactName: str(r.contact_name),
     contactExternalId: String(r.contact_external_id),
     isLead: num(r.is_lead) === 1,
@@ -116,10 +119,11 @@ function toTicket(r: Row): TicketRecord {
 }
 
 const CONVERSATION_ROW_SELECT = `
-  SELECT cv.*, ct.name AS contact_name, ct.external_id AS contact_external_id,
+  SELECT cv.*, ct.name AS contact_name, ct.external_id AS contact_external_id, u.name AS assignee_name,
          EXISTS (SELECT 1 FROM leads l WHERE l.contact_id = cv.contact_id) AS is_lead
   FROM conversations cv
-  JOIN contacts ct ON ct.id = cv.contact_id`;
+  JOIN contacts ct ON ct.id = cv.contact_id
+  LEFT JOIN users u ON u.id = cv.assigned_to`;
 
 const CONVERSATION_COLUMNS: Record<keyof ConversationPatch, string> = {
   status: "status",
