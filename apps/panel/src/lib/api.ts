@@ -4,14 +4,17 @@ import type {
   AgencyLeadDto,
   AppointmentDto,
   AutomationReportDto,
+  BusinessProfile,
   CampaignDto,
   CampaignInput,
+  Channel,
   ConnectionsDto,
   ConversationDetailDto,
   ConversationFilter,
   ConversationListItemDto,
   CostsDto,
   GalleryItemDto,
+  GiroDto,
   InsightsDto,
   KbDocumentDetailDto,
   KbDocumentDto,
@@ -23,6 +26,8 @@ import type {
   MessageDto,
   PaymentDto,
   PlaygroundReplyDto,
+  PromptPreviewDto,
+  PromptVersionDto,
   SettingsDto,
   SettingsUpdate,
   StatsDto,
@@ -123,6 +128,15 @@ export const api = {
     post<{ client: AgencyClientDto }>("/agency/clients", input),
   agencyRemove: (id: string) =>
     request<{ ok: true }>(`/agency/clients/${id}`, { method: "DELETE" }),
+  prompt: (channel: Channel) => request<PromptPreviewDto>(`/prompt?channel=${channel}`),
+  promptVersions: () => request<{ versions: PromptVersionDto[] }>("/prompt/versions"),
+  promptSaveVersion: (label: string) => post<{ ok: true }>("/prompt/versions", { label }),
+  promptRestore: (id: string) =>
+    post<{ profile: BusinessProfile }>(`/prompt/versions/${id}/restore`),
+  giros: () => request<{ giros: GiroDto[] }>("/giros"),
+  giroApply: (giro: string) =>
+    post<{ profile: BusinessProfile; pendingQuestions: string[] }>("/giro/apply", { giro }),
+
   agencyLeads: () => request<{ leads: AgencyLeadDto[]; failed: string[] }>("/agency/leads"),
   saveSettings: (update: SettingsUpdate) =>
     request<SettingsDto>("/settings", { method: "PUT", body: JSON.stringify(update) }),

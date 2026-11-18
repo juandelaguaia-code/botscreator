@@ -129,6 +129,46 @@ const COMMANDS = {
       );
     },
   },
+  giros: {
+    help: "Lista los 14 giros con sus preguntas y superpoderes recomendados",
+    run: async () => {
+      for (const g of (await api("/giros")).giros)
+        console.log(`${g.id.padEnd(14)} ${g.name} — ${g.pitch}`);
+    },
+  },
+  "giro:aplicar": {
+    help: "<id> Cambia el giro del bot (guarda versión antes)",
+    run: async ([giro]) =>
+      print(
+        await api("/giro/apply", {
+          method: "POST",
+          body: { giro: need(giro, "giro:aplicar <id>") },
+        }),
+      ),
+  },
+  "prompt:versiones": {
+    help: "Historial del prompt (últimas 50)",
+    run: async () => print((await api("/prompt/versions")).versions),
+  },
+  "prompt:guardar": {
+    help: '"<nombre>" Guarda la configuración actual como versión',
+    run: async ([label]) =>
+      print(
+        await api("/prompt/versions", {
+          method: "POST",
+          body: { label: need(label, 'prompt:guardar "<nombre>"') },
+        }),
+      ),
+  },
+  "prompt:restaurar": {
+    help: "<id> Vuelve a una versión (la actual queda guardada)",
+    run: async ([id]) => {
+      await api(`/prompt/versions/${need(id, "prompt:restaurar <id>")}/restore`, {
+        method: "POST",
+      });
+      console.log("✓ Restaurada");
+    },
+  },
   probar: {
     help: '"<mensaje>" [sesión] Habla con el bot como un cliente (canal Prueba)',
     run: async ([text, sessionId = "cli"]) =>

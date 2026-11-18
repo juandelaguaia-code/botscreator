@@ -333,6 +333,42 @@ export const COMMAND_GROUPS: CommandGroup[] = [
     hint: "El cerebro del bot: ver, editar y diagnosticar sin tocar los frenos.",
     items: [
       {
+        command: "/re-nichar",
+        description: "Cambiar el giro del bot (14 giros)",
+        prompt: skill("re-nichar", "Cambia mi bot al giro que corresponde a mi negocio."),
+      },
+      {
+        command: "/versionar-prompt",
+        description: "Historial y deshacer del prompt",
+        prompt: skill("versionar-prompt", "Guarda una versión de mi prompt antes de cambiarlo."),
+      },
+      {
+        command: "/prompt-por-canal",
+        description: "Personalidad distinta por canal",
+        prompt: skill(
+          "prompt-por-canal",
+          "Haz que mi bot sea más formal en WhatsApp y más casual en Instagram.",
+        ),
+      },
+      {
+        command: "/ejemplos-prompt",
+        description: "Tus mejores chats como ejemplos de estilo",
+        prompt: skill(
+          "ejemplos-prompt",
+          "Usa mis mejores conversaciones como ejemplos para el bot.",
+        ),
+      },
+      {
+        command: "/lab-prompt",
+        description: "Probar variantes A/B y elegir la mejor",
+        prompt: skill("lab-prompt", "Prueba variantes de mi prompt para que agende más citas."),
+      },
+      {
+        command: "/limpiar-prompt",
+        description: "Ordenar un prompt inflado sin cambiar su comportamiento",
+        prompt: skill("limpiar-prompt", "Mi prompt está muy largo, ordénalo."),
+      },
+      {
         command: "/prompt",
         description: "Ver y editar el prompt por secciones",
         prompt: skill("prompt", "Muéstrame mi prompt y ayúdame a editar las instrucciones."),

@@ -1,5 +1,6 @@
 import type { BusinessProfile } from "../business.js";
 import { BUTTONS_INSTRUCTION } from "../buttons.js";
+import { giroOf } from "../giros.js";
 import { languageInstruction } from "../i18n.js";
 import { channelFormatSection, guardrailsSection } from "./guardrails.js";
 import { VOICE_PRESETS } from "./voice.js";
@@ -9,6 +10,9 @@ export type PromptSectionId =
   | "channel"
   | "business"
   | "voice"
+  | "giro"
+  | "examples"
+  | "channel_instructions"
   | "instructions"
   | "buttons"
   | "integration"
@@ -132,6 +136,16 @@ export function buildSystemPrompt({
       locked: true,
       text: channelFormatSection(channel),
     },
+    ...(profile.giro !== "general"
+      ? [
+          {
+            id: "giro" as const,
+            title: `Atención de ${giroOf(profile.giro).name}`,
+            locked: true,
+            text: `## Cómo atiende un negocio de este giro (${giroOf(profile.giro).name})\n${giroOf(profile.giro).playbook}`,
+          },
+        ]
+      : []),
     {
       id: "business",
       title: "Información del negocio",
@@ -146,12 +160,34 @@ export function buildSystemPrompt({
     },
   ];
 
+  if (profile.examples.length > 0) {
+    sections.push({
+      id: "examples",
+      title: "Ejemplos de estilo",
+      locked: false,
+      text: `## Ejemplos de cómo respondes (imita el estilo; los datos salen siempre de la información del negocio)\n${profile.examples
+        .map((e) => `Cliente: ${e.customer}\nTú: ${e.reply}`)
+        .join("\n\n")}`,
+    });
+  }
+
   if (profile.instructions) {
     sections.push({
       id: "instructions",
       title: "Instrucciones del dueño",
       locked: false,
       text: `## Instrucciones del dueño\n${profile.instructions}`,
+    });
+  }
+
+  const perChannel =
+    profile.channelInstructions[channel as keyof typeof profile.channelInstructions];
+  if (perChannel) {
+    sections.push({
+      id: "channel_instructions",
+      title: "Instrucciones para este canal",
+      locked: false,
+      text: `## Instrucciones para este canal\n${perChannel}`,
     });
   }
 

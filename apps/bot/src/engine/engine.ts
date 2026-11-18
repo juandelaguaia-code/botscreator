@@ -4,8 +4,10 @@ import {
   buildSystemPrompt,
   type Channel,
   chooseModelTier,
+  detectLanguage,
   extractButtons,
   isExplicitHumanRequest,
+  type Language,
   parseRating,
   renderBusinessInfo,
   systemMessage,
@@ -193,7 +195,7 @@ export class ConversationEngine {
         conversation,
         reason: "El cliente pidió hablar con una persona",
       });
-      const reply = systemMessage(profile.language, "handoffAck");
+      const reply = systemMessage(replyLanguage(profile, text), "handoffAck");
       await this.saveAssistant(conversation.id, reply, { kind: "handoff_ack" });
       return { ...base, reply, handoff: true };
     }
@@ -209,7 +211,7 @@ export class ConversationEngine {
           conversation,
           reason: `Tope de gasto de IA del mes alcanzado (US$${settings.monthlyBudgetUsd})`,
         });
-        const reply = systemMessage(profile.language, "budgetReached");
+        const reply = systemMessage(replyLanguage(profile, text), "budgetReached");
         await this.saveAssistant(conversation.id, reply, { kind: "budget" });
         return { ...base, reply, handoff: true };
       }
@@ -237,7 +239,8 @@ export class ConversationEngine {
       contactId: args.contact.id,
       rating,
     });
-    const { language, reviewUrl } = args.profile;
+    const language = replyLanguage(args.profile, args.text);
+    const { reviewUrl } = args.profile;
     let reply = systemMessage(language, "surveyThanks");
     let handoff = false;
     if (rating <= 2) {
@@ -437,7 +440,7 @@ export class ConversationEngine {
           conversation,
           reason: "El modelo declinó responder este mensaje",
         });
-        return finish(systemMessage(profile.language, "handoffAck"), {
+        return finish(systemMessage(replyLanguage(profile, text), "handoffAck"), {
           handoff: true,
           meta: { kind: "refusal" },
         });
@@ -445,7 +448,7 @@ export class ConversationEngine {
 
       if (!result.text) {
         return finish(
-          systemMessage(profile.language, handoff ? "handoffAck" : "errorFallback"),
+          systemMessage(replyLanguage(profile, text), handoff ? "handoffAck" : "errorFallback"),
           {},
         );
       }
@@ -477,7 +480,7 @@ export class ConversationEngine {
             reason: `Blindaje: el bot iba a afirmar algo sin respaldo (${verdict.unsupported.join("; ")})`,
           });
           await recordGap(text || draft, "verifier");
-          return finish(systemMessage(profile.language, "confirmWithTeam"), {
+          return finish(systemMessage(replyLanguage(profile, text), "confirmWithTeam"), {
             handoff: true,
             blocked,
             meta: { blocked },
@@ -511,7 +514,7 @@ export class ConversationEngine {
         conversation,
         reason: "El bot no pudo responder (falla técnica)",
       });
-      const reply = systemMessage(profile.language, "errorFallback");
+      const reply = systemMessage(replyLanguage(profile, text), "errorFallback");
       await this.recordUsage(conversation.id, responses);
       await this.saveAssistant(conversation.id, reply, { kind: "error" });
       return {
@@ -606,6 +609,12 @@ export class ConversationEngine {
       lastMessagePreview: preview(text),
     });
   }
+}
+
+/** En modo espejo, los mensajes del sistema salen en el idioma en que escribió el cliente. */
+export function replyLanguage(profile: BusinessProfile, text: string): Language {
+  if (profile.language !== "espejo") return profile.language;
+  return detectLanguage(text) ?? "es-419";
 }
 
 function preview(text: string): string {

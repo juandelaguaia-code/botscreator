@@ -47,6 +47,12 @@ pnpm yunque ayuda
 | `/voz-de-marca`       | Preset o retrato de voz a medida                                              | instrucciones (con tu sí)      |
 | `/prompt`             | Ver y editar el prompt por secciones (hub)                                    | perfil (con tu sí)             |
 | `/auditar-prompt`     | Boleta de calidad y 5 arreglos priorizados                                    | solo lectura                   |
+| `/re-nichar`          | Cambiar el giro (14 giros) sin perder la configuración                        | perfil (con tu sí)             |
+| `/versionar-prompt`   | Guardar versiones del prompt y volver a cualquiera                            | perfil (con tu sí)             |
+| `/prompt-por-canal`   | Personalidad distinta por canal                                               | perfil (con tu sí)             |
+| `/ejemplos-prompt`    | Mejores chats reales como ejemplos de estilo                                  | perfil (con tu sí)             |
+| `/lab-prompt`         | Variantes A/B con rúbrica y conversaciones simuladas                          | chats de prueba                |
+| `/limpiar-prompt`     | Ordenar un prompt inflado sin cambiar el comportamiento                       | perfil y conocimiento (con sí) |
 | `/afinar`             | Mejorar con chats reales: huecos, escalaciones, bloqueos                      | FAQ / perfil (con tu sí)       |
 | `/reporte`            | Informe mensual en lenguaje de dueño                                          | solo lectura                   |
 | `/exportar`           | Leads y conversaciones a CSV/JSON                                             | solo lectura                   |

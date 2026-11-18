@@ -243,6 +243,31 @@ export interface ConnectionsDto {
   transcription: boolean;
 }
 
+export interface PromptVersionDto {
+  id: string;
+  label: string;
+  author: string | null;
+  createdAt: number;
+  preview: {
+    giro: string;
+    tone: string;
+    instructionsChars: number;
+    faq: number;
+    offerings: number;
+  };
+}
+
+export interface GiroDto {
+  id: string;
+  name: string;
+  pitch: string;
+  bookingLabel: string;
+  tone: string;
+  recommended: string[];
+  suggestedQuestions: string[];
+  suggestedOfferings: string[];
+}
+
 export interface PromptPreviewDto {
   channel: Channel;
   sections: Array<{ id: string; title: string; locked: boolean; text: string }>;

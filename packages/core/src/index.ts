@@ -3,6 +3,7 @@ export * from "./buttons.js";
 export * from "./claims.js";
 export * from "./contracts.js";
 export * from "./csv.js";
+export * from "./giros.js";
 export * from "./handoff.js";
 export * from "./i18n.js";
 export * from "./knowledge.js";

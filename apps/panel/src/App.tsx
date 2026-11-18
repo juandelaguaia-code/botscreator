@@ -14,6 +14,7 @@ import { KnowledgePage } from "./pages/Knowledge.js";
 import { LeadsPage } from "./pages/Leads.js";
 import { LoginPage } from "./pages/Login.js";
 import { PlaygroundPage } from "./pages/Playground.js";
+import { PromptPage } from "./pages/Prompt.js";
 import { SettingsPage } from "./pages/Settings.js";
 import { SummaryPage } from "./pages/Summary.js";
 import { SuperpowersPage } from "./pages/Superpowers.js";
@@ -84,6 +85,7 @@ export function App() {
         <Route path="/galeria" element={<GalleryPage />} />
         <Route path="/agenda" element={<SalesPage />} />
         <Route path="/agencia" element={<AgencyPage />} />
+        <Route path="/prompt" element={<PromptPage />} />
         <Route path="/mejoras" element={<ImprovementsPage />} />
         <Route path="/probar" element={<PlaygroundPage />} />
         <Route path="/superpoderes" element={<SuperpowersPage />} />

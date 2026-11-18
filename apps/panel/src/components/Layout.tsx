@@ -41,6 +41,7 @@ export const NAV: Array<{ title: string; items: NavItem[] }> = [
     title: "Bot",
     items: [
       { to: "/superpoderes", label: "Superpoderes", icon: "⚡" },
+      { to: "/prompt", label: "Prompt", icon: "✎" },
       { to: "/conexiones", label: "Conexiones", icon: "⇄" },
       { to: "/probar", label: "Probar bot", icon: "▶" },
       { to: "/comandos", label: "Comandos", icon: "⌘" },

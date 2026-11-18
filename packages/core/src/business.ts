@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { GIRO_IDS } from "./giros.js";
 
 /** Idiomas de sistema soportados. `espejo` contesta en el idioma de cada cliente. */
 export const LANGUAGES = ["es-419", "es-ES", "en", "pt-BR", "espejo"] as const;
@@ -57,6 +58,28 @@ export const businessProfileSchema = z.object({
   language: languageSchema.default("es-419"),
   /** Símbolo de moneda para precios. */
   currency: z.string().trim().min(1).max(5).default("$"),
+  /** Giro del negocio: aporta la guía de atención del rubro. */
+  giro: z.enum(GIRO_IDS).default("general"),
+  /** Instrucciones extra por canal (p. ej. más formal en WhatsApp, más casual en Instagram). */
+  channelInstructions: z
+    .object({
+      web: z.string().trim().max(2000).optional(),
+      whatsapp: z.string().trim().max(2000).optional(),
+      telegram: z.string().trim().max(2000).optional(),
+      instagram: z.string().trim().max(2000).optional(),
+      messenger: z.string().trim().max(2000).optional(),
+    })
+    .default({}),
+  /** Ejemplos de respuestas ideales (few-shot): enseñan estilo, nunca datos. */
+  examples: z
+    .array(
+      z.object({
+        customer: z.string().trim().min(1).max(500),
+        reply: z.string().trim().min(1).max(1000),
+      }),
+    )
+    .max(10)
+    .default([]),
   /** Link para dejar reseña (Google u otro). Activa el superpoder Pide reseñas. */
   reviewUrl: z.string().trim().url().max(500).or(z.literal("")).default(""),
 });

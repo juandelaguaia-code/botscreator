@@ -71,6 +71,9 @@ function Section({
 
 export function SettingsPage({ onSaved }: { onSaved: () => void }) {
   const { data, error, loading } = useApi(() => api.settings(), "settings");
+  const giros = useApi(() => api.giros(), "giros");
+  const [pending, setPending] = useState<Array<{ question: string; answer: string }>>([]);
+  const [giroBusy, setGiroBusy] = useState(false);
   const [profile, setProfile] = useState<BusinessProfile | null>(null);
   const [settings, setSettings] = useState<BotSettings | null>(null);
   const [saving, setSaving] = useState(false);
@@ -137,6 +140,80 @@ export function SettingsPage({ onSaved }: { onSaved: () => void }) {
       />
 
       <div className="space-y-6">
+        <Section
+          title="Giro del negocio"
+          description="Cada giro trae su forma de atender (reservas, citas, visitas, pedidos) y las preguntas que más conviene dejar respondidas. Nunca agrega precios: esos los pones tú."
+        >
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-56 flex-1">
+              <Field label="Giro">
+                <Select
+                  value={profile.giro}
+                  onChange={(e) => p({ giro: e.target.value as BusinessProfile["giro"] })}
+                >
+                  {(giros.data?.giros ?? []).map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name} — {g.pitch}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <Button
+              variant="secondary"
+              disabled={giroBusy}
+              onClick={async () => {
+                setGiroBusy(true);
+                try {
+                  const res = await api.giroApply(profile.giro);
+                  setProfile(res.profile);
+                  resetOfferingKeys(res.profile.offerings.length);
+                  setPending(res.pendingQuestions.map((question) => ({ question, answer: "" })));
+                } finally {
+                  setGiroBusy(false);
+                }
+              }}
+            >
+              Aplicar giro
+            </Button>
+          </div>
+          {pending.length ? (
+            <div className="space-y-3 rounded-lg bg-slate-50 p-4">
+              <p className="text-sm font-medium">
+                Responde estas preguntas para que el bot las conteste solo:
+              </p>
+              {pending.map((q, i) => (
+                <Field key={q.question} label={q.question}>
+                  <Input
+                    value={q.answer}
+                    placeholder="Tu respuesta (déjala vacía si no aplica)"
+                    onChange={(e) =>
+                      setPending(
+                        pending.map((x, j) => (j === i ? { ...x, answer: e.target.value } : x)),
+                      )
+                    }
+                  />
+                </Field>
+              ))}
+              <Button
+                onClick={() => {
+                  const answered = pending.filter((q) => q.answer.trim());
+                  for (let n = 0; n < answered.length; n++) faqKeys.add();
+                  p({
+                    faq: [
+                      ...profile.faq,
+                      ...answered.map((q) => ({ question: q.question, answer: q.answer.trim() })),
+                    ],
+                  });
+                  setPending([]);
+                }}
+              >
+                Agregar a preguntas frecuentes
+              </Button>
+            </div>
+          ) : null}
+        </Section>
+
         <Section
           title="Tu negocio"
           description="La única fuente de verdad del bot: lo que no esté aquí, no lo afirma."
@@ -303,6 +380,90 @@ export function SettingsPage({ onSaved }: { onSaved: () => void }) {
           >
             + Agregar pregunta
           </Button>
+        </Section>
+
+        <Section
+          title="Ejemplos de estilo"
+          description="Respuestas ideales que el bot imita en tono y forma (no en datos). Usa tus mejores chats reales; máximo 10."
+        >
+          {profile.examples.map((ex, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: ejemplos editables sin id
+            <div key={i} className="grid gap-2 rounded-lg bg-slate-50 p-3 sm:grid-cols-2">
+              <Textarea
+                rows={2}
+                placeholder="Lo que escribió el cliente"
+                value={ex.customer}
+                onChange={(e) =>
+                  p({
+                    examples: profile.examples.map((x, j) =>
+                      j === i ? { ...x, customer: e.target.value } : x,
+                    ),
+                  })
+                }
+              />
+              <Textarea
+                rows={2}
+                placeholder="Cómo respondiste tú"
+                value={ex.reply}
+                onChange={(e) =>
+                  p({
+                    examples: profile.examples.map((x, j) =>
+                      j === i ? { ...x, reply: e.target.value } : x,
+                    ),
+                  })
+                }
+              />
+              <Button
+                variant="ghost"
+                onClick={() => p({ examples: profile.examples.filter((_, j) => j !== i) })}
+              >
+                Quitar
+              </Button>
+            </div>
+          ))}
+          {profile.examples.length < 10 ? (
+            <Button
+              variant="secondary"
+              onClick={() => p({ examples: [...profile.examples, { customer: "", reply: "" }] })}
+            >
+              + Agregar ejemplo
+            </Button>
+          ) : null}
+        </Section>
+
+        <Section
+          title="Instrucciones por canal"
+          description="Una personalidad distinta por red sin tocar las demás (p. ej. más formal en WhatsApp, más casual en Instagram)."
+        >
+          {(["whatsapp", "instagram", "messenger", "telegram", "web"] as const).map((ch) => (
+            <Field
+              key={ch}
+              label={
+                {
+                  whatsapp: "WhatsApp",
+                  instagram: "Instagram",
+                  messenger: "Messenger",
+                  telegram: "Telegram",
+                  web: "Chat web",
+                }[ch]
+              }
+            >
+              <Textarea
+                rows={2}
+                maxLength={2000}
+                placeholder="Vacío = igual que en todos los canales"
+                value={profile.channelInstructions[ch] ?? ""}
+                onChange={(e) =>
+                  p({
+                    channelInstructions: {
+                      ...profile.channelInstructions,
+                      [ch]: e.target.value || undefined,
+                    },
+                  })
+                }
+              />
+            </Field>
+          ))}
         </Section>
 
         <Section

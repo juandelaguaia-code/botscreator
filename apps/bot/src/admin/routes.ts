@@ -29,6 +29,7 @@ import { exportApi } from "./export.js";
 import { readJson } from "./http.js";
 import { integrationsApi } from "./integrations.js";
 import { knowledgeApi } from "./knowledge.js";
+import { promptApi, snapshotProfile } from "./prompt.js";
 
 const FILTERS: ConversationFilter[] = ["all", "needs_human", "unread", "leads"];
 
@@ -62,6 +63,7 @@ adminApi.route("/export", exportApi);
 adminApi.route("/", analyticsApi);
 adminApi.route("/", integrationsApi);
 adminApi.route("/", agencyApi);
+adminApi.route("/", promptApi);
 
 adminApi.get("/summary", async (c) => c.json(await c.get("services").store.summary(Date.now())));
 
@@ -235,7 +237,10 @@ adminApi.put("/settings", async (c) => {
   const input = await readJson(c.req.raw, settingsUpdateSchema);
   if (!input) return c.json({ error: "Configuración inválida. Revisa los campos." }, 400);
   const { store } = c.get("services");
-  if (input.profile) await store.setSetting(SETTINGS_KEYS.profile, input.profile);
+  if (input.profile) {
+    await snapshotProfile(c.env.DB, store, "Antes de guardar", c.get("actor")?.name ?? null);
+    await store.setSetting(SETTINGS_KEYS.profile, input.profile);
+  }
   if (input.settings) await store.setSetting(SETTINGS_KEYS.settings, input.settings);
   return c.json(await settingsDto(c));
 });

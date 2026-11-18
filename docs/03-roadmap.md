@@ -55,12 +55,13 @@ Cada fase deja algo **funcionando y probado**. Los IDs remiten al [mapa funciona
 - [x] Plantillas de WhatsApp (recordatorio, no-shows, campañas) y Campañas por segmento (C7, D10)
 - [ ] Google Calendar y Calendly como alternativas a Cal.com
 
-## Fase 6 · Giros y personalidad
+## Fase 6 · Giros y personalidad ✅
 
-- [ ] Los 14 giros: prompt, herramientas y etiquetas de panel por giro (E6)
-- [ ] Modo `espejo` y detección es/en/pt (B8)
-- [ ] Retrato de voz desde la web del negocio (B6)
-- [ ] Prompt: versiones y deshacer, prompt por canal, ejemplos few-shot (D15)
+- [x] 14 giros + general: guía de atención por rubro, servicios típicos sin precio, preguntas a responder y superpoderes recomendados; aplicar o cambiar giro sin pisar lo del dueño (E6)
+- [x] Modo `espejo` con detección es/en/pt también para los mensajes del sistema (B8)
+- [x] Retrato de voz con la skill `/voz-de-marca` (B6)
+- [x] Prompt: versiones y deshacer (automáticas al guardar), instrucciones por canal, ejemplos few-shot y vista por secciones (D15)
+- [x] Skills: `/re-nichar`, `/versionar-prompt`, `/prompt-por-canal`, `/ejemplos-prompt`, `/lab-prompt`, `/limpiar-prompt`
 
 ## Fase 7 · Equipo y marca blanca
 
