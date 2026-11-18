@@ -5,6 +5,7 @@ import {
   type LlmProvider,
   type ProviderKeys,
 } from "@yunque/llm";
+import { AutomationStore } from "./automation/store.js";
 import { type Transcriber, WorkersAiTranscriber } from "./channels/media.js";
 import { type ChannelSenders, createSenders } from "./channels/registry.js";
 import { loadConfig } from "./engine/config.js";
@@ -38,6 +39,7 @@ export interface Services {
   store: Store;
   engine: ConversationEngine;
   knowledge: KnowledgeService;
+  automation: AutomationStore;
   config: () => ReturnType<typeof loadConfig>;
   providerFor: (settings: BotSettings) => LlmProvider;
   senders: ChannelSenders;
@@ -68,10 +70,12 @@ export function createServices(env: Env): Services {
     createProvider(settings.provider, keys, settings.models);
   const knowledge = createKnowledge(env);
   const notifier = createNotifier(env);
+  const automation = new AutomationStore(env.DB);
 
   const engine = new ConversationEngine({
     store,
     knowledge,
+    automation,
     loadConfig: config,
     providerFor,
     notify: async (event) => {
@@ -89,6 +93,7 @@ export function createServices(env: Env): Services {
     store,
     engine,
     knowledge,
+    automation,
     config,
     providerFor,
     senders: createSenders(env),

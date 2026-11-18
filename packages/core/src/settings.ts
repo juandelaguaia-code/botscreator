@@ -54,6 +54,55 @@ export const botSettingsSchema = z.object({
    * embeddings (0.7 en producción).
    */
   kbMinScore: z.number().min(0.1).max(0.99).nullable().default(null),
+  /** Tope de gasto de IA por mes (USD). Al llegar, el bot deja de usar IA y pasa todo al equipo. */
+  monthlyBudgetUsd: z.number().min(0.5).max(100_000).nullable().default(null),
+  /** Superpoderes automáticos (corren con el cron cada 15 minutos). */
+  automation: z
+    .object({
+      /** Vigilante: analiza cada conversación cerrada y avisa si hay un cliente molesto o una venta en riesgo. */
+      vigilante: z.boolean().default(true),
+      /** Cazador: un solo seguimiento a chats enfriados (3–20 h). */
+      hunter: z.boolean().default(true),
+      hunterDailyMax: z.number().int().min(1).max(200).default(30),
+      /** Encuesta 1–5 al cerrar una atención resuelta. */
+      surveys: z.boolean().default(false),
+      /** Segundo toque a interesados enfriados hace días. */
+      noShows: z.boolean().default(false),
+      noShowAfterDays: z.number().int().min(1).max(30).default(2),
+      /** Invitación a reseña (requiere el link de reseñas del negocio). */
+      reviews: z.boolean().default(true),
+      /** Resumen nocturno al dueño. */
+      dailyReport: z.boolean().default(true),
+      dailyReportHour: z.number().int().min(0).max(23).default(21),
+    })
+    .default({
+      vigilante: true,
+      hunter: true,
+      hunterDailyMax: 30,
+      surveys: false,
+      noShows: false,
+      noShowAfterDays: 2,
+      reviews: true,
+      dailyReport: true,
+      dailyReportHour: 21,
+    }),
+  /** Plantillas aprobadas de WhatsApp para escribir fuera de la ventana de 24 h. */
+  whatsappTemplates: z
+    .object({
+      noShow: z
+        .object({
+          name: z.string().trim().min(1).max(120),
+          language: z.string().trim().min(2).max(10),
+        })
+        .optional(),
+      campaign: z
+        .object({
+          name: z.string().trim().min(1).max(120),
+          language: z.string().trim().min(2).max(10),
+        })
+        .optional(),
+    })
+    .default({}),
 });
 export type BotSettings = z.infer<typeof botSettingsSchema>;
 

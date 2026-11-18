@@ -21,6 +21,7 @@ import { SETTINGS_KEYS } from "../engine/config.js";
 import { PAUSE_FOREVER } from "../engine/engine.js";
 import { configuredProviders } from "../services.js";
 import type { AppEnv } from "../types.js";
+import { analyticsApi } from "./analytics.js";
 import { isAuthenticated, login, logout, requireAuth } from "./auth.js";
 import { toConversationDto, toLeadDto, toMessageDto, toTicketDto } from "./dto.js";
 import { exportApi } from "./export.js";
@@ -56,6 +57,7 @@ adminApi.use("*", requireAuth);
 
 adminApi.route("/", knowledgeApi);
 adminApi.route("/export", exportApi);
+adminApi.route("/", analyticsApi);
 
 adminApi.get("/summary", async (c) => c.json(await c.get("services").store.summary(Date.now())));
 

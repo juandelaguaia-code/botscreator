@@ -46,6 +46,8 @@ export interface BuildPromptInput {
   passages?: KnowledgePassage[];
   /** Botones tocables activados. */
   buttons?: boolean;
+  /** Memoria del cliente de conversaciones anteriores (la deja el Vigilante). */
+  customerMemory?: string | null;
 }
 
 export function renderPassages(passages: KnowledgePassage[]): string {
@@ -111,6 +113,7 @@ export function buildSystemPrompt({
   knowledgeBase = false,
   passages = [],
   buttons = false,
+  customerMemory = null,
 }: BuildPromptInput): BuiltPrompt {
   const sections: PromptSection[] = [
     {
@@ -160,6 +163,11 @@ export function buildSystemPrompt({
   });
 
   const volatileParts = [`Fecha y hora actual del negocio: ${formatNow(now, profile.timezone)}.`];
+  if (customerMemory) {
+    volatileParts.push(
+      `## Lo que sabemos de este cliente (conversaciones anteriores)\n${customerMemory}\nÚsalo con naturalidad; no le recites lo que sabes.`,
+    );
+  }
   if (knowledgeBase) {
     volatileParts.push(
       passages.length > 0

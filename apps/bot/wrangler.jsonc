@@ -30,6 +30,8 @@
     "PUBLIC_URL": ""
   },
   "observability": { "enabled": true },
+  // Superpoderes automáticos (Vigilante, Cazador, encuestas, reportes…).
+  "triggers": { "crons": ["*/15 * * * *"] },
 
   "env": {
     // Desarrollo local sin cuenta de Cloudflare: sin Workers AI ni Vectorize, la base de

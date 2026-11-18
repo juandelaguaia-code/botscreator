@@ -57,6 +57,8 @@ export const businessProfileSchema = z.object({
   language: languageSchema.default("es-419"),
   /** Símbolo de moneda para precios. */
   currency: z.string().trim().min(1).max(5).default("$"),
+  /** Link para dejar reseña (Google u otro). Activa el superpoder Pide reseñas. */
+  reviewUrl: z.string().trim().url().max(500).or(z.literal("")).default(""),
 });
 export type BusinessProfile = z.infer<typeof businessProfileSchema>;
 

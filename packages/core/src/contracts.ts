@@ -250,3 +250,82 @@ export interface PromptPreviewDto {
   volatile: string;
   totalChars: number;
 }
+
+// ---------- analítica y automatización (fase 4) ----------
+
+export interface StatsDto {
+  days: number;
+  series: Array<{
+    day: string;
+    conversations: number;
+    messages: number;
+    leads: number;
+    handoffs: number;
+    costUsd: number;
+  }>;
+  averageRating: number | null;
+  analyzed: number;
+  contacts: number;
+  /** Clientes que volvieron a escribir en el periodo (retención). */
+  returningContacts: number;
+}
+
+export interface CostsDto {
+  monthUsd: number;
+  projectedUsd: number;
+  budgetUsd: number | null;
+  byModel: Array<{
+    provider: string;
+    model: string;
+    calls: number;
+    inputTokens: number;
+    outputTokens: number;
+    cacheReadTokens: number;
+    costUsd: number;
+  }>;
+  byDay: Array<{ day: string; costUsd: number }>;
+}
+
+export interface InsightDto {
+  conversationId: string;
+  channel: Channel;
+  contactName: string | null;
+  contactExternalId: string;
+  rating: number;
+  sentiment: "positivo" | "neutral" | "negativo";
+  resolvedWithoutHuman: boolean;
+  openSale: boolean;
+  upset: boolean;
+  intent: string | null;
+  objection: string | null;
+  unansweredQuestion: string | null;
+  summary: string;
+  createdAt: number;
+}
+
+export interface InsightsDto {
+  items: InsightDto[];
+  summary: {
+    analyzed: number;
+    averageRating: number | null;
+    upset: number;
+    openSales: number;
+    resolvedWithoutHumanPct: number;
+    positivePct: number;
+    topIntents: Array<{ label: string; count: number }>;
+    topObjections: Array<{ label: string; count: number }>;
+  };
+}
+
+export interface AutomationReportDto {
+  closed: number;
+  analyzed: number;
+  alerts: number;
+  surveys: number;
+  reviews: number;
+  hunted: number;
+  noShows: number;
+  dailyReport: boolean;
+  watchdog: boolean;
+  errors: string[];
+}

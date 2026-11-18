@@ -6,6 +6,7 @@ import {
   chooseModelTier,
   extractButtons,
   isExplicitHumanRequest,
+  parseRating,
   renderBusinessInfo,
   systemMessage,
   TOOL_NAMES,
@@ -20,6 +21,7 @@ import {
   type LlmProvider,
   runToolLoop,
 } from "@yunque/llm";
+import type { AutomationStore } from "../automation/store.js";
 import type { MediaAttachment } from "../channels/types.js";
 import type { KnowledgeBase, SearchHit } from "../knowledge/service.js";
 import type { ContactRecord, ConversationRecord, MessageRecord, Store } from "../store/types.js";
@@ -77,6 +79,11 @@ export interface EngineDeps {
   loadConfig: () => Promise<{ profile: BusinessProfile; settings: BotSettings }>;
   /** Base de conocimiento (opcional): pasajes por turno, búsqueda y radar de huecos. */
   knowledge?: KnowledgeBase;
+  /** Encuestas, memoria del cliente y tope de gasto (opcional). */
+  automation?: Pick<
+    AutomationStore,
+    "pendingSurvey" | "recordSurvey" | "claimOutreach" | "getContactMemory" | "costSince"
+  >;
   /** Aviso al dueño (Telegram, correo…). Los errores se registran y no cortan la respuesta. */
   notify?: (event: HandoffEvent) => Promise<void>;
   now?: () => number;
@@ -141,6 +148,13 @@ export class ConversationEngine {
     const { profile, settings } = await this.deps.loadConfig();
 
     if (!settings.enabled) return { ...base, reply: null, handoff: false, skipped: "disabled" };
+
+    // Respuesta a una encuesta de satisfacción: se registra sin gastar IA.
+    const surveyReply = text
+      ? await this.handleSurveyAnswer({ contact, conversation, profile, settings, text })
+      : null;
+    if (surveyReply) return { ...base, ...surveyReply };
+
     if (conversation.pausedUntil && conversation.pausedUntil > now) {
       return { ...base, reply: null, handoff: false, skipped: "paused" };
     }
@@ -161,7 +175,62 @@ export class ConversationEngine {
       return { ...base, reply, handoff: true };
     }
 
+    // Tope de gasto: al llegar, el bot deja de usar IA y pasa la conversación al equipo.
+    if (settings.monthlyBudgetUsd !== null && this.deps.automation) {
+      const date = new Date(now);
+      const monthStart = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1);
+      const spent = await this.deps.automation.costSince(monthStart);
+      if (spent >= settings.monthlyBudgetUsd) {
+        await this.escalate({
+          contact,
+          conversation,
+          reason: `Tope de gasto de IA del mes alcanzado (US$${settings.monthlyBudgetUsd})`,
+        });
+        const reply = systemMessage(profile.language, "budgetReached");
+        await this.saveAssistant(conversation.id, reply, { kind: "budget" });
+        return { ...base, reply, handoff: true };
+      }
+    }
+
     return this.answerWithAi({ contact, conversation, profile, settings, input, text });
+  }
+
+  private async handleSurveyAnswer(args: {
+    contact: ContactRecord;
+    conversation: ConversationRecord;
+    profile: BusinessProfile;
+    settings: BotSettings;
+    text: string;
+  }): Promise<{ reply: string; handoff: boolean } | null> {
+    const automation = this.deps.automation;
+    if (!automation) return null;
+    const rating = parseRating(args.text);
+    if (rating === null) return null;
+    const pending = await automation.pendingSurvey(args.contact.id, this.now() - 24 * 3_600_000);
+    if (!pending) return null;
+
+    await automation.recordSurvey({
+      conversationId: pending.conversationId,
+      contactId: args.contact.id,
+      rating,
+    });
+    const { language, reviewUrl } = args.profile;
+    let reply = systemMessage(language, "surveyThanks");
+    let handoff = false;
+    if (rating <= 2) {
+      handoff = true;
+      reply = systemMessage(language, "surveyLow");
+      await this.escalate({ ...args, reason: `Encuesta: calificó la atención con ${rating}/5` });
+    } else if (rating >= 4 && args.settings.automation.reviews && reviewUrl) {
+      const claimed = await automation.claimOutreach({
+        kind: "resena",
+        conversationId: pending.conversationId,
+        contactId: args.contact.id,
+      });
+      if (claimed) reply = systemMessage(language, "reviewInvite").replace("{url}", reviewUrl);
+    }
+    await this.saveAssistant(args.conversation.id, reply, { kind: "survey", rating });
+    return { reply, handoff };
   }
 
   /**
@@ -252,6 +321,10 @@ export class ConversationEngine {
         );
       }
 
+      const automation = this.deps.automation;
+      const customerMemory = automation
+        ? await this.safely(() => automation.getContactMemory(contact.id), null)
+        : null;
       const prompt = buildSystemPrompt({
         profile,
         channel: input.channel,
@@ -259,6 +332,7 @@ export class ConversationEngine {
         knowledgeBase: kbReady,
         passages,
         buttons: settings.buttonsEnabled,
+        customerMemory,
       });
 
       const recordGap = async (question: string, source: "kb_miss" | "handoff" | "verifier") => {

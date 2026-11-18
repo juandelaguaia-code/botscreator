@@ -14,7 +14,11 @@ export type SystemMessageKey =
   | "rateLimited"
   | "confirmWithTeam"
   | "unsupportedMedia"
-  | "budgetReached";
+  | "budgetReached"
+  | "surveyQuestion"
+  | "surveyThanks"
+  | "surveyLow"
+  | "reviewInvite";
 
 const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
   "es-419": {
@@ -29,6 +33,11 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
       "Por ahora no puedo abrir ese tipo de archivo. ¿Me lo escribes en un mensaje?",
     budgetReached:
       "Gracias por escribir. En este momento te atiende el equipo directamente; en breve te respondemos.",
+    surveyQuestion: "¿Cómo te atendimos? Responde con un número del 1 al 5 (5 = excelente).",
+    surveyThanks: "¡Gracias por tu respuesta! 🙌",
+    surveyLow:
+      "Gracias por contarnos. Lamento que no haya sido una buena experiencia: ya le avisé al equipo para que te contacte.",
+    reviewInvite: "¡Qué bueno que te gustó! Si te animas, tu reseña nos ayuda muchísimo: {url}",
   },
   "es-ES": {
     handoffAck: "¡Por supuesto! Ya he avisado al equipo y enseguida te atiende una persona. 🙌",
@@ -42,6 +51,13 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
       "Por ahora no puedo abrir ese tipo de archivo. ¿Me lo escribes en un mensaje?",
     budgetReached:
       "Gracias por escribir. Ahora mismo te atiende el equipo directamente; enseguida te respondemos.",
+    surveyQuestion:
+      "¿Qué tal te hemos atendido? Responde con un número del 1 al 5 (5 = excelente).",
+    surveyThanks: "¡Gracias por tu respuesta! 🙌",
+    surveyLow:
+      "Gracias por contárnoslo. Siento que no haya sido una buena experiencia: ya he avisado al equipo para que te contacte.",
+    reviewInvite:
+      "¡Nos alegra que te haya gustado! Si te animas, tu reseña nos ayuda muchísimo: {url}",
   },
   en: {
     handoffAck: "Of course! I've let the team know and a person will be with you shortly. 🙌",
@@ -53,6 +69,11 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
       "Let me confirm that with the team so I don't give you the wrong info. We'll get back to you shortly. 🙌",
     unsupportedMedia: "I can't open that type of file yet. Could you write it in a message?",
     budgetReached: "Thanks for writing. The team will reply to you directly very soon.",
+    surveyQuestion: "How did we do? Reply with a number from 1 to 5 (5 = excellent).",
+    surveyThanks: "Thanks for your feedback! 🙌",
+    surveyLow:
+      "Thanks for telling us. Sorry it wasn't a good experience: I've let the team know so they can reach out.",
+    reviewInvite: "So glad you liked it! If you have a minute, a review helps us a lot: {url}",
   },
   "pt-BR": {
     handoffAck: "Claro! Já avisei a equipe e logo uma pessoa vai te atender. 🙌",
@@ -65,6 +86,11 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
     unsupportedMedia:
       "Ainda não consigo abrir esse tipo de arquivo. Pode me escrever numa mensagem?",
     budgetReached: "Obrigado por escrever. A equipe vai te responder diretamente em breve.",
+    surveyQuestion: "Como foi o atendimento? Responda com um número de 1 a 5 (5 = excelente).",
+    surveyThanks: "Obrigado pela resposta! 🙌",
+    surveyLow:
+      "Obrigado por contar. Sinto muito que não foi uma boa experiência: já avisei a equipe para entrar em contato.",
+    reviewInvite: "Que bom que você gostou! Se puder, sua avaliação nos ajuda muito: {url}",
   },
 };
 
