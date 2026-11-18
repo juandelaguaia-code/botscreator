@@ -6,6 +6,8 @@ export interface Actor {
   id: string;
   name: string;
   role: "owner" | "admin" | "team";
+  /** Permiso sobre Modo agencia de un acceso personal (equipo de agencia). */
+  agencyAccess?: "edit" | "read" | null;
 }
 
 export interface AppEnv {

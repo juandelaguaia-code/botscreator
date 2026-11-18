@@ -126,7 +126,10 @@ export function App() {
           <Route path="/campanas" element={<CampaignsPage />} />
           <Route path="/galeria" element={<GalleryPage />} />
           <Route path="/agenda" element={<SalesPage />} />
-          <Route path="/agencia" element={<AgencyPage />} />
+          <Route
+            path="/agencia"
+            element={<AgencyPage access={s.agencyAccess} isOwner={s.actor?.role === "owner"} />}
+          />
           <Route path="/prompt" element={<PromptPage />} />
           <Route path="/mejoras" element={<ImprovementsPage />} />
           <Route path="/probar" element={<PlaygroundPage />} />

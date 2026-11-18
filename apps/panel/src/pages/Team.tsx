@@ -114,6 +114,11 @@ export function TeamPage() {
                   </p>
                 </div>
                 <Badge tone={STATUS[u.status].tone}>{STATUS[u.status].label}</Badge>
+                {u.agencyAccess ? (
+                  <Badge tone="blue">
+                    Agencia: {u.agencyAccess === "edit" ? "edita" : "solo lectura"}
+                  </Badge>
+                ) : null}
                 <div className="w-40 shrink-0">
                   <Select
                     aria-label={`Rol de ${u.name}`}

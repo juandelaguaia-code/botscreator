@@ -1,4 +1,5 @@
 import type {
+  AgencyAccess,
   AgencyClientDto,
   AgencyClientInput,
   AgencyLeadDto,
@@ -173,6 +174,15 @@ export const api = {
   giroApply: (giro: string) =>
     post<{ profile: BusinessProfile; pendingQuestions: string[] }>("/giro/apply", { giro }),
 
+  agencyCollaborators: () =>
+    request<{ collaborators: TeamUserDto[]; candidates: TeamUserDto[]; max: number }>(
+      "/agency/collaborators",
+    ),
+  agencySetAccess: (userId: string, access: AgencyAccess | null) =>
+    request<{ user: TeamUserDto }>(`/agency/collaborators/${userId}`, {
+      method: "PUT",
+      body: JSON.stringify({ access }),
+    }),
   agencyLeads: () => request<{ leads: AgencyLeadDto[]; failed: string[] }>("/agency/leads"),
   saveSettings: (update: SettingsUpdate) =>
     request<SettingsDto>("/settings", { method: "PUT", body: JSON.stringify(update) }),

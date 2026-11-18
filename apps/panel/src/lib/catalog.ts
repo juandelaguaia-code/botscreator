@@ -287,10 +287,41 @@ export const COMMAND_GROUPS: CommandGroup[] = [
         description: "Invitar a alguien al panel con su propio acceso",
         prompt: 'pnpm yunque equipo:invitar "Ana Pérez" ana@tunegocio.com team',
       },
+    ],
+  },
+  {
+    title: "Terminal · Instalador",
+    hint: "Monta, actualiza y da de baja bots en Cloudflare. Cada bot con sus propios recursos.",
+    items: [
       {
-        command: "pnpm deploy",
-        description: "Compilar el panel y desplegar el bot",
-        prompt: "pnpm deploy",
+        command: "pnpm bot init",
+        description: "Registrar un bot nuevo (nombre y giro)",
+        prompt: 'pnpm bot init --nombre "Barbería Don Pepe" --giro barberia',
+      },
+      {
+        command: "pnpm bot instalar",
+        description: "Crear sus recursos, desplegar y pedir los secretos",
+        prompt: "pnpm bot instalar barberia-don-pepe",
+      },
+      {
+        command: "pnpm bot doctor",
+        description: "Revisar tu equipo y la salud de un bot",
+        prompt: "pnpm bot doctor barberia-don-pepe",
+      },
+      {
+        command: "pnpm bot actualizar",
+        description: "Respaldo y despliegue de la última versión",
+        prompt: "pnpm bot actualizar --todos",
+      },
+      {
+        command: "pnpm bot vincular",
+        description: "Agregar el bot a tu central de agencia",
+        prompt: "pnpm bot vincular barberia-don-pepe --mensualidad 49",
+      },
+      {
+        command: "pnpm bot eliminar",
+        description: "Dar de baja un bot (con respaldo)",
+        prompt: "pnpm bot eliminar barberia-don-pepe",
       },
     ],
   },
@@ -325,6 +356,16 @@ export const COMMAND_GROUPS: CommandGroup[] = [
         command: "/voz-de-marca",
         description: "Que el bot suene como tú",
         prompt: skill("voz-de-marca", "Haz que mi bot escriba como yo."),
+      },
+      {
+        command: "/actualizar-bot",
+        description: "Pasar uno o todos los bots a la última versión",
+        prompt: skill("actualizar-bot", "Actualiza mi bot a la última versión sin perder nada."),
+      },
+      {
+        command: "/diagnosticar",
+        description: "Encontrar por qué el bot no responde",
+        prompt: skill("diagnosticar", "Mi bot no está contestando, revisa qué pasa."),
       },
       {
         command: "/afinar",
@@ -409,6 +450,11 @@ export const COMMAND_GROUPS: CommandGroup[] = [
         description: "Clientes simulados y boleta de calidad",
         prompt: skill("cliente-misterioso", "Pon a prueba mi bot antes de entregarlo."),
       },
+      {
+        command: "/eliminar-bot",
+        description: "Dar de baja un bot de forma segura",
+        prompt: skill("eliminar-bot", "Da de baja el bot de [cliente]; ya no lo usa."),
+      },
     ],
   },
   {
@@ -440,6 +486,11 @@ export const COMMAND_GROUPS: CommandGroup[] = [
         command: "/cliente-nuevo",
         description: "Bot aislado para un negocio cliente",
         prompt: skill("cliente-nuevo", "Monta un bot para mi cliente [nombre del negocio]."),
+      },
+      {
+        command: "/equipo-agencia",
+        description: "Colaboradores de Modo agencia y vincular bots",
+        prompt: skill("equipo-agencia", "Dale acceso de solo lectura a Modo agencia a [nombre]."),
       },
       {
         command: "/cotizar",
@@ -488,9 +539,8 @@ export const AGENCY_PIPELINE: PipelineStep[] = [
     title: "Cliente nuevo",
     command: "/cliente-nuevo",
     description:
-      "Monta su bot aislado: su Worker, su base y su índice, configurado de punta a punta.",
-    prompt:
-      "/cliente-nuevo Monta el bot de [negocio] y déjalo listo para conectarlo a mi portafolio.",
+      "Monta su bot aislado con el instalador (su Worker, su base y su índice) y lo vincula a tu central.",
+    prompt: "/cliente-nuevo Monta el bot de [negocio] con pnpm bot y vincúlalo a mi portafolio.",
   },
   {
     stage: "Paso 2",

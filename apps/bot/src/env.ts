@@ -11,6 +11,11 @@ export interface Env {
 
   // variables (wrangler.jsonc)
   BOT_NAME?: string;
+  /** Valores iniciales del perfil mientras el dueño no guarda el suyo (los pone el instalador). */
+  BOT_GIRO?: string;
+  BOT_LANGUAGE?: string;
+  BOT_CURRENCY?: string;
+  BOT_TIMEZONE?: string;
   LLM_PROVIDER?: string;
   /** URL pública del bot, para links en avisos (https://mi-bot.cuenta.workers.dev). */
   PUBLIC_URL?: string;

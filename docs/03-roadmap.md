@@ -69,14 +69,14 @@ Cada fase deja algo **funcionando y probado**. Los IDs remiten al [mapa funciona
 - [x] White-label: nombre, logo subido a R2, color de acento, 12 fuentes, 3 estilos (Nimbus, Onyx, Terra), textos del login, pestañas ocultas y dominio propio guiado por `/whitelabel` (D14)
 - [x] Skills `/equipo`, `/whitelabel`, `/ocultar-tabs` y comandos `pnpm yunque equipo*` / `bitacora`
 
-## Fase 8 · Modo agencia, CLI y skills (en curso)
+## Fase 8 · Modo agencia, CLI y skills ✅
 
 - [x] Modo agencia: cualquier bot es tu central; portafolio con estado y métricas en vivo, bandeja de leads de todos los bots, ingreso mensual y pipeline con prompts (E1–E4)
 - [x] Token de agencia por bot (`AGENCY_TOKEN`, Bearer) para operar bots de clientes
-- [x] 27 skills para Claude Code (configurar, conectar, superpoderes, conocimiento, prompt y sus herramientas, afinar, reporte, mantenimiento, cliente misterioso, equipo, marca blanca, cliente nuevo, cotizar, propuesta, ROI, demo, cobrar…)
+- [x] 31 skills para Claude Code (configurar, conectar, superpoderes, conocimiento, prompt y sus herramientas, afinar, reporte, mantenimiento, diagnosticar, actualizar, eliminar, cliente misterioso, equipo, marca blanca, equipo de agencia, cliente nuevo, cotizar, propuesta, ROI, demo, cobrar…)
 - [x] CLI de operación `pnpm yunque`
-- [ ] CLI de instalación: `init`, `install <giro>`, `update` (respaldo), `doctor`, `delete`
-- [ ] Equipo de agencia (colaboradores con permisos) (E5)
+- [x] Instalador `pnpm bot` (`apps/cli`): `init`, `instalar`, `actualizar` (con respaldo y `--todos`), `doctor`, `vincular`, `eliminar` (con confirmación y respaldo), `secreto` y `lista`; un bot = sus propios recursos en Cloudflare (E7)
+- [x] Equipo de agencia: hasta 3 colaboradores con permiso de editar o solo lectura, aplicado también en la API (E5)
 
 ## Fase 9 · App móvil (opcional)
 

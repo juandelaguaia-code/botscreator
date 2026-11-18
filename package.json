@@ -4,7 +4,7 @@
   "description": "Plataforma propia de chatbots de IA por giro de negocio, auto-hospedada en Cloudflare.",
   "packageManager": "pnpm@9.15.9",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.18"
   },
   "scripts": {
     "dev": "pnpm --filter @yunque/bot dev",
@@ -18,7 +18,8 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "db:migrate:local": "pnpm --filter @yunque/bot db:migrate:local",
     "deploy": "pnpm build && pnpm --filter @yunque/bot deploy",
-    "yunque": "node apps/bot/scripts/yunque.mjs"
+    "yunque": "node apps/bot/scripts/yunque.mjs",
+    "bot": "node apps/cli/src/main.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.8",

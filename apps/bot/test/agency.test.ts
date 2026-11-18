@@ -48,7 +48,7 @@ function twoBots() {
     cookie = (res.headers.get("set-cookie") ?? "").split(";")[0] as string;
   };
   const client = (path: string, init: RequestInit = {}) => app.request(path, init, clientEnv);
-  return { agency, client, login };
+  return { agency, client, login, clientEnv };
 }
 
 afterEach(() => vi.unstubAllGlobals());
@@ -168,5 +168,35 @@ describe("central de agencia", () => {
     expect(res.status).toBe(422);
     const leads = (await (await agency("/admin/api/agency/leads")).json()) as { leads: unknown[] };
     expect(leads.leads).toEqual([]);
+  });
+});
+
+describe("renovar el vínculo", () => {
+  it("cambia el token solo si el bot lo acepta, y actualiza la mensualidad", async () => {
+    const { agency, login, clientEnv } = twoBots();
+    await login();
+    const added = (await (
+      await agency("/admin/api/agency/clients", {
+        method: "POST",
+        body: JSON.stringify({ name: "Don José", url: "https://barberia.example", token: TOKEN }),
+      })
+    ).json()) as { client: { id: string } };
+
+    const wrong = await agency(`/admin/api/agency/clients/${added.client.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ token: "otro-token-que-el-bot-no-tiene-123" }),
+    });
+    expect(wrong.status).toBe(422);
+
+    clientEnv.AGENCY_TOKEN = "token-nuevo-de-agencia-987654321";
+    const renewed = await agency(`/admin/api/agency/clients/${added.client.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ token: "token-nuevo-de-agencia-987654321", monthlyFee: 55 }),
+    });
+    expect(renewed.status).toBe(200);
+    const list = (await (await agency("/admin/api/agency/clients")).json()) as {
+      clients: Array<{ online: boolean; monthlyFee: number }>;
+    };
+    expect(list.clients[0]).toMatchObject({ online: true, monthlyFee: 55 });
   });
 });

@@ -28,6 +28,9 @@ apps/
   bot/       Cloudflare Worker (Hono): canales, motor de conversación, API del panel,
              migraciones D1. Sirve el panel compilado en /admin.
   panel/     SPA React + Vite + Tailwind: el /admin de cada bot.
+  cli/       Instalador `pnpm bot`: genera la configuración de wrangler de cada bot desde la plantilla,
+             crea sus recursos, despliega, respalda, diagnostica, vincula y elimina. Corre con Node sin
+             compilar y depende de puertos (Runner, Io) para probarse sin tocar Cloudflare.
 docs/        Especificación, arquitectura, roadmap y decisiones (ADR).
 ```
 
@@ -60,7 +63,7 @@ Canal (web / Telegram / WhatsApp…)
 | `tickets`        | Handoffs, huecos de conocimiento, avisos del sistema                      |
 | `llm_usage`      | Tokens y costo por llamada (pestaña Costos y tope de gasto)               |
 | `login_attempts` | Bloqueo tras 5 intentos fallidos (15 min)                                 |
-| `users`          | Accesos personales (rol, estado, hash de contraseña)                      |
+| `users`          | Accesos personales (rol, estado, hash, permiso de Modo agencia)           |
 | `access_tokens`  | Links de invitación y recuperación (hash, vencimiento, uso)               |
 | `audit_log`      | Bitácora del panel: quién entró y qué cambió                              |
 
@@ -78,6 +81,8 @@ Las migraciones son SQL plano versionado en `apps/bot/migrations` y se aplican c
 - Roles: dueño (todo), Administrador (todo menos pestañas ocultas) y Equipo (secciones elegidas). El
   middleware `enforceTabs` aplica los mismos permisos en la API, no solo en el menú. La sesión de un acceso
   personal lleva una huella del hash de su contraseña: cambiarla o desactivar el acceso cierra sus sesiones.
+- Modo agencia: solo el dueño y hasta 3 colaboradores (`users.agency_access` = editar o solo lectura).
+  Con solo lectura, la API rechaza toda escritura bajo `/agency`. Solo el dueño administra la lista.
 - Links de invitación (7 días) y recuperación (1 hora): de un solo uso y guardados como SHA-256, nunca
   en claro. "¿Olvidaste tu contraseña?" responde igual exista o no el correo.
 - Webhooks: Telegram valida `X-Telegram-Bot-Api-Secret-Token`; Meta valida la firma

@@ -1,12 +1,16 @@
 import {
   type AgencyClientDto,
   type AgencyLeadDto,
+  agencyAccessInputSchema,
   agencyClientInputSchema,
+  agencyClientUpdateSchema,
   type LeadDto,
+  MAX_AGENCY_COLLABORATORS,
   type SummaryDto,
 } from "@yunque/core";
 import { Hono } from "hono";
 import { newId } from "../lib/crypto.js";
+import { publicUser, TeamStore } from "../store/team.js";
 import type { AppEnv } from "../types.js";
 import { readJson } from "./http.js";
 
@@ -102,6 +106,32 @@ agencyApi.post("/agency/clients", async (c) => {
   return c.json({ client: status }, 201);
 });
 
+/** Renovar el token (p. ej. con `pnpm bot vincular`), el nombre, el giro o la mensualidad. */
+agencyApi.patch("/agency/clients/:id", async (c) => {
+  const input = await readJson(c.req.raw, agencyClientUpdateSchema);
+  if (!input) return c.json({ error: "Datos inválidos." }, 400);
+  const current = await c.env.DB.prepare("SELECT * FROM agency_clients WHERE id = ?")
+    .bind(c.req.param("id"))
+    .first<ClientRow>();
+  if (!current) return c.json({ error: "Cliente no encontrado" }, 404);
+  const row: ClientRow = {
+    ...current,
+    name: input.name ?? current.name,
+    niche: input.niche ?? current.niche,
+    token: input.token ?? current.token,
+    monthly_fee: input.monthlyFee !== undefined ? input.monthlyFee : current.monthly_fee,
+  };
+  const status = await liveStatus(row);
+  if (input.token && !status.online)
+    return c.json({ error: `El bot no aceptó el token nuevo: ${status.error}` }, 422);
+  await c.env.DB.prepare(
+    "UPDATE agency_clients SET name = ?, niche = ?, token = ?, monthly_fee = ? WHERE id = ?",
+  )
+    .bind(row.name, row.niche, row.token, row.monthly_fee, row.id)
+    .run();
+  return c.json({ client: status });
+});
+
 agencyApi.delete("/agency/clients/:id", async (c) => {
   const res = await c.env.DB.prepare("DELETE FROM agency_clients WHERE id = ?")
     .bind(c.req.param("id"))
@@ -129,4 +159,49 @@ agencyApi.get("/agency/leads", async (c) => {
     .map((r, i) => (r.status === "rejected" ? list[i]?.name : null))
     .filter((n): n is string => Boolean(n));
   return c.json({ leads, failed });
+});
+
+// ---------- equipo de agencia ----------
+
+/** Solo el dueño (contraseña maestra o token de agencia) decide quién más entra a Modo agencia. */
+const ownerOnly = (c: { get: (k: "actor") => { role: string } | undefined }) =>
+  c.get("actor")?.role === "owner";
+
+agencyApi.get("/agency/collaborators", async (c) => {
+  if (!ownerOnly(c))
+    return c.json({ error: "Solo el dueño administra el equipo de agencia." }, 403);
+  const users = (await new TeamStore(c.env.DB).list()).map(publicUser);
+  return c.json({
+    collaborators: users.filter((u) => u.agencyAccess),
+    candidates: users.filter((u) => !u.agencyAccess && u.status === "active"),
+    max: MAX_AGENCY_COLLABORATORS,
+  });
+});
+
+agencyApi.put("/agency/collaborators/:userId", async (c) => {
+  if (!ownerOnly(c))
+    return c.json({ error: "Solo el dueño administra el equipo de agencia." }, 403);
+  const input = await readJson(c.req.raw, agencyAccessInputSchema);
+  if (!input) return c.json({ error: "Permiso inválido (editar, solo lectura o ninguno)." }, 400);
+  const team = new TeamStore(c.env.DB);
+  const user = await team.get(c.req.param("userId"));
+  if (!user) return c.json({ error: "Acceso no encontrado" }, 404);
+  if (input.access && user.status !== "active")
+    return c.json({ error: "Esa persona todavía no tiene un acceso activo." }, 409);
+  if (input.access && !user.agencyAccess) {
+    const current = (await team.list()).filter((u) => u.agencyAccess).length;
+    if (current >= MAX_AGENCY_COLLABORATORS)
+      return c.json(
+        { error: `El equipo de agencia admite hasta ${MAX_AGENCY_COLLABORATORS} colaboradores.` },
+        409,
+      );
+  }
+  await team.setAgencyAccess(user.id, input.access);
+  const label = { edit: "puede editar", read: "solo lectura" } as const;
+  await team.audit(
+    c.get("actor") ?? null,
+    input.access ? "Sumó al equipo de agencia" : "Quitó del equipo de agencia",
+    input.access ? `${user.name} (${label[input.access]})` : user.name,
+  );
+  return c.json({ user: publicUser({ ...user, agencyAccess: input.access }) });
 });

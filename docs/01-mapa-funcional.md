@@ -10,14 +10,14 @@ Es la **especificación de producto** de Yunque: cada fila tiene un ID que el
 
 ## Piezas del producto
 
-| Pieza                        | Qué es                                                                                         | En Yunque           |
-| ---------------------------- | ---------------------------------------------------------------------------------------------- | ------------------- |
-| **Motor del bot**            | Un Worker por negocio en la cuenta Cloudflare del dueño: canales, IA, superpoderes, datos (D1) | `apps/bot`          |
-| **Panel del bot** (`/admin`) | El tablero de cada negocio: bandeja, clientes, tickets, configuración, costos…                 | `apps/panel`        |
-| **HQ / Cloud**               | Panel central multi-bot: mis bots, estadísticas y clientes agregados, Modo Agencia             | `apps/hq` (fase 8)  |
-| **CLI**                      | `init · install · update · doctor · pair · delete`                                             | `apps/cli` (fase 8) |
-| **Skills del agente**        | Guiones para Claude Code: `/reporte`, `/prompt`, `/afinar`…                                    | `skills/` (fase 8)  |
-| **App móvil (Inbox)**        | Bandeja en el teléfono, tomar chats, reporte del día                                           | fase 9 (opcional)   |
+| Pieza                        | Qué es                                                                                         | En Yunque          |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- | ------------------ |
+| **Motor del bot**            | Un Worker por negocio en la cuenta Cloudflare del dueño: canales, IA, superpoderes, datos (D1) | `apps/bot`         |
+| **Panel del bot** (`/admin`) | El tablero de cada negocio: bandeja, clientes, tickets, configuración, costos…                 | `apps/panel`       |
+| **HQ / Cloud**               | Panel central multi-bot: mis bots, estadísticas y clientes agregados, Modo Agencia             | `apps/hq` (fase 8) |
+| **CLI**                      | `pnpm bot`: `init · instalar · actualizar · doctor · vincular · eliminar`                      | `apps/cli` ✅      |
+| **Skills del agente**        | Guiones para Claude Code: `/reporte`, `/prompt`, `/afinar`…                                    | `skills/` (fase 8) |
+| **App móvil (Inbox)**        | Bandeja en el teléfono, tomar chats, reporte del día                                           | fase 9 (opcional)  |
 
 ## A. Habilidades base (todo bot, gratis)
 

@@ -24,6 +24,27 @@ Sin ese archivo, el CLI usa `http://localhost:8787` y la contraseña de `apps/bo
 pnpm yunque ayuda
 ```
 
+## Instalador `pnpm bot`
+
+Monta y mantiene bots en Cloudflare. Cada bot vive en `.yunque/bots/<bot>/` (en `.gitignore`): su `bot.json`
+(nombre, giro, cuenta, ids de recursos, URL, versión desplegada) y su `wrangler.jsonc`, que se **genera** desde
+la plantilla `apps/bot/wrangler.jsonc` en cada despliegue. Los respaldos quedan en `.yunque/respaldos/`.
+
+| Comando                                                                               | Qué hace                                                                                                |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `init --nombre "…" --giro …` (`--idioma --moneda --zona --proveedor --cuenta --slug`) | Registra el bot; no toca Cloudflare                                                                     |
+| `instalar [bot] [--sin-secretos]`                                                     | Crea base D1, índice Vectorize y bucket R2 (reutiliza los existentes), migra, despliega y pide secretos |
+| `actualizar [bot] [--todos] [--sin-respaldo]`                                         | Respaldo, configuración regenerada, migraciones y despliegue; muestra qué cambió                        |
+| `doctor [bot]`                                                                        | Node, dependencias, sesión de Cloudflare; salud del bot, secretos, migraciones y versión                |
+| `vincular [bot] [--mensualidad N]`                                                    | Token de agencia nuevo: secreto en el bot y alta (o renovación) en tu central                           |
+| `eliminar <bot> [--confirmar <bot>] [--sin-respaldo]`                                 | Respaldo y borrado de Worker, base, índice y bucket; lo saca de la central                              |
+| `secreto <bot> <NOMBRE>`                                                              | Guarda un secreto escribiéndolo directo en wrangler                                                     |
+| `lista`                                                                               | Los bots de este equipo                                                                                 |
+
+Los secretos nunca pasan por el instalador: la persona los escribe en wrangler (`instalar`, `secreto`). El único
+que genera el CLI es el token de agencia de `vincular`, que va por la entrada estándar al bot y por HTTPS a la
+central, sin mostrarse ni guardarse en disco. Con el bot instalado, `pnpm bot doctor <bot>` debe quedar sin ✗.
+
 | Comando                                                                          | Qué hace                                                        |
 | -------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | `resumen`                                                                        | Números del bot (24 h, 30 días, costo del mes)                  |
@@ -63,6 +84,10 @@ pnpm yunque ayuda
 | `/equipo`             | Invitar personas, roles, links nuevos y bitácora                              | accesos (con tu sí)            |
 | `/whitelabel`         | Panel con tu nombre, logo, color, estilo y dominio propio                     | marca y wrangler (con tu sí)   |
 | `/ocultar-tabs`       | Esconder secciones a los accesos personales                                   | ajustes (con tu sí)            |
+| `/actualizar-bot`     | Uno o todos los bots a la última versión, con respaldo                        | despliega (con tu sí)          |
+| `/diagnosticar`       | Por qué no responde: doctor, avisos del sistema y registros                   | solo lectura salvo lo aprobado |
+| `/eliminar-bot`       | Baja segura: respaldo, borrado en Cloudflare y salida de la central           | borra recursos (con tu sí)     |
+| `/equipo-agencia`     | Hasta 3 colaboradores en Modo agencia y vincular bots a la central            | accesos (con tu sí)            |
 | `/cliente-nuevo`      | Bot aislado para un negocio cliente (agencia)                                 | crea recursos (con tu sí)      |
 | `/cotizar`            | Precio con costos reales y piso de margen (agencia)                           | —                              |
 | `/propuesta`          | Documento comercial para cerrar (agencia)                                     | —                              |

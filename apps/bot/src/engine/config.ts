@@ -17,6 +17,19 @@ export const SETTINGS_KEYS = {
 export interface ConfigDefaults {
   botName?: string;
   provider?: string;
+  /** Giro, idioma, moneda y zona horaria iniciales (variables del instalador). */
+  profile?: { giro?: string; language?: string; currency?: string; timezone?: string };
+}
+
+/** Perfil base: nombre y valores iniciales; uno inválido se ignora en vez de romper el bot. */
+function baseProfileFor(defaults: ConfigDefaults): BusinessProfile {
+  let profile = defaultBusinessProfile(defaults.botName?.trim() || "Mi negocio");
+  for (const [key, value] of Object.entries(defaults.profile ?? {})) {
+    if (!value?.trim()) continue;
+    const parsed = businessProfileSchema.safeParse({ ...profile, [key]: value.trim() });
+    if (parsed.success) profile = parsed.data;
+  }
+  return profile;
 }
 
 /**
@@ -32,7 +45,7 @@ export async function loadConfig(
     store.getSetting<unknown>(SETTINGS_KEYS.settings),
   ]);
 
-  const baseProfile = defaultBusinessProfile(defaults.botName?.trim() || "Mi negocio");
+  const baseProfile = baseProfileFor(defaults);
   const profileParsed = businessProfileSchema.safeParse({
     ...baseProfile,
     ...(asObject(rawProfile) ?? {}),

@@ -21,6 +21,7 @@ function toUser(r: Row): UserRecord {
     position: str(r.position),
     createdAt: Number(r.created_at),
     lastLoginAt: r.last_login_at === null ? null : Number(r.last_login_at),
+    agencyAccess: r.agency_access === "edit" || r.agency_access === "read" ? r.agency_access : null,
     passwordHash: str(r.password_hash),
     passwordSalt: str(r.password_salt),
   };
@@ -103,6 +104,11 @@ export class TeamStore {
       .prepare("UPDATE users SET last_login_at = ? WHERE id = ?")
       .bind(this.clock(), id)
       .run();
+  }
+
+  /** Da, cambia o quita el permiso sobre Modo agencia. */
+  async setAgencyAccess(id: string, access: "edit" | "read" | null): Promise<void> {
+    await this.db.prepare("UPDATE users SET agency_access = ? WHERE id = ?").bind(access, id).run();
   }
 
   /** Borra el acceso y suelta sus chats (sin depender de que la base tenga activas las llaves foráneas). */

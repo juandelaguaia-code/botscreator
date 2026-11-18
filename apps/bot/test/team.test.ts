@@ -413,3 +413,121 @@ describe("marca blanca", () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe("equipo de agencia", () => {
+  async function ownerSession(setupResult: ReturnType<typeof setup>) {
+    const owner = setupResult.browser();
+    await owner.request("/admin/api/login", {
+      method: "POST",
+      body: JSON.stringify({ password: "maestra-123" }),
+    });
+    return owner;
+  }
+
+  it("Modo agencia solo lo ven el dueño y sus colaboradores, con permiso de editar o leer", async () => {
+    const s = setup();
+    const owner = await ownerSession(s);
+    const admin = await inviteAndActivate(owner, s.browser, "admin", "jefa@tacos.com");
+    const waiter = await inviteAndActivate(owner, s.browser, "team", "luis@tacos.com");
+
+    // sin permiso, ni el Administrador entra a Modo agencia
+    expect((await admin.person.request("/admin/api/agency/clients")).status).toBe(403);
+    const before = await admin.person.json<{ allowedTabs: string[]; agencyAccess: null }>(
+      "/admin/api/session",
+    );
+    expect(before.allowedTabs).not.toContain("/agencia");
+    expect(before.agencyAccess).toBeNull();
+
+    // el dueño suma a Luis (rol Equipo) en solo lectura
+    const put = await owner.request(`/admin/api/agency/collaborators/${waiter.userId}`, {
+      method: "PUT",
+      body: JSON.stringify({ access: "read" }),
+    });
+    expect(put.status).toBe(200);
+    const luis = await waiter.person.json<{ allowedTabs: string[]; agencyAccess: string }>(
+      "/admin/api/session",
+    );
+    expect(luis.allowedTabs).toContain("/agencia");
+    expect(luis.agencyAccess).toBe("read");
+    expect((await waiter.person.request("/admin/api/agency/clients")).status).toBe(200);
+    const readOnly = await waiter.person.request("/admin/api/agency/clients", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    expect(readOnly.status).toBe(403);
+    expect(await readOnly.json()).toEqual({
+      error: "Tu acceso a Modo agencia es de solo lectura.",
+    });
+    // sigue sin ver el resto de lo exclusivo del Administrador
+    expect((await waiter.person.request("/admin/api/costs")).status).toBe(403);
+
+    // con permiso de editar ya pasa a la validación de datos
+    await owner.request(`/admin/api/agency/collaborators/${waiter.userId}`, {
+      method: "PUT",
+      body: JSON.stringify({ access: "edit" }),
+    });
+    const edit = await waiter.person.request("/admin/api/agency/clients", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    expect(edit.status).toBe(400);
+
+    // solo el dueño administra el equipo de agencia
+    expect((await waiter.person.request("/admin/api/agency/collaborators")).status).toBe(403);
+    const list = await owner.json<{ collaborators: Array<{ id: string }>; max: number }>(
+      "/admin/api/agency/collaborators",
+    );
+    expect(list.collaborators.map((u) => u.id)).toEqual([waiter.userId]);
+    expect(list.max).toBe(3);
+
+    // quitarlo le cierra la sección
+    await owner.request(`/admin/api/agency/collaborators/${waiter.userId}`, {
+      method: "PUT",
+      body: JSON.stringify({ access: null }),
+    });
+    expect((await waiter.person.request("/admin/api/agency/clients")).status).toBe(403);
+    const audit = await owner.json<{ entries: Array<{ action: string }> }>("/admin/api/team/audit");
+    expect(audit.entries.map((e) => e.action)).toContain("Sumó al equipo de agencia");
+  });
+
+  it("admite hasta 3 colaboradores y solo accesos activos", async () => {
+    const s = setup();
+    const owner = await ownerSession(s);
+    const ids: string[] = [];
+    for (const n of [1, 2, 3, 4]) {
+      ids.push((await inviteAndActivate(owner, s.browser, "team", `p${n}@tacos.com`)).userId);
+    }
+    for (const id of ids.slice(0, 3)) {
+      const res = await owner.request(`/admin/api/agency/collaborators/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ access: "read" }),
+      });
+      expect(res.status).toBe(200);
+    }
+    const fourth = await owner.request(`/admin/api/agency/collaborators/${ids[3]}`, {
+      method: "PUT",
+      body: JSON.stringify({ access: "edit" }),
+    });
+    expect(fourth.status).toBe(409);
+    // cambiar el permiso de uno que ya está no cuenta como nuevo
+    const change = await owner.request(`/admin/api/agency/collaborators/${ids[0]}`, {
+      method: "PUT",
+      body: JSON.stringify({ access: "edit" }),
+    });
+    expect(change.status).toBe(200);
+
+    const pending = await owner.json<{ user: { id: string } }>("/admin/api/team/invites", {
+      method: "POST",
+      body: JSON.stringify({ name: "Sin activar", email: "nuevo@tacos.com", role: "team" }),
+    });
+    await owner.request(`/admin/api/agency/collaborators/${ids[1]}`, {
+      method: "PUT",
+      body: JSON.stringify({ access: null }),
+    });
+    const inactive = await owner.request(`/admin/api/agency/collaborators/${pending.user.id}`, {
+      method: "PUT",
+      body: JSON.stringify({ access: "read" }),
+    });
+    expect(inactive.status).toBe(409);
+  });
+});

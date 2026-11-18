@@ -22,6 +22,8 @@ Spec: `docs/01-mapa-funcional.md` · arquitectura: `docs/02-arquitectura.md` · 
 - `pnpm build && pnpm db:migrate:local && pnpm dev` — Worker local con panel en `/admin`.
 - `LLM_PROVIDER=fake` en `apps/bot/.dev.vars` para probar sin llave de IA.
 - `pnpm yunque <comando>` — CLI de operación contra la API del panel (`apps/bot/scripts/yunque.mjs`).
+- `pnpm bot <comando>` — instalador (`apps/cli`): init, instalar, actualizar, doctor, vincular, eliminar. Corre con
+  Node sin compilar: imports con extensión `.ts` y solo sintaxis borrable (nada de `enum` ni propiedades en el constructor).
 
 ## Agentes
 

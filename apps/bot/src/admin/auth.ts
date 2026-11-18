@@ -177,7 +177,7 @@ export async function resolveActor(c: Context<AppEnv>): Promise<Actor | null> {
   if (payload.sub === "owner" || payload.sub === "admin") return OWNER;
   const user = await new TeamStore(c.env.DB).get(payload.sub);
   if (user?.status !== "active" || fingerprint(user) !== payload.h) return null;
-  return { id: user.id, name: user.name, role: user.role };
+  return { id: user.id, name: user.name, role: user.role, agencyAccess: user.agencyAccess };
 }
 
 export async function isAuthenticated(c: Context<AppEnv>): Promise<boolean> {
@@ -197,9 +197,20 @@ export const requireAuth: MiddlewareHandler<AppEnv> = async (c, next) => {
 export function allowedTabs(actor: Actor, settings: BotSettings): string[] | null {
   if (actor.role === "owner") return null;
   const hidden = new Set(settings.branding.hiddenTabs);
-  if (actor.role === "admin") return ALL_TABS.filter((t) => !hidden.has(t));
-  const blocked = new Set<string>([...ADMIN_ONLY_TABS, ...hidden]);
-  return settings.teamSections.filter((t) => !blocked.has(t));
+  // Modo agencia es del dueño y de su equipo de agencia (hasta 3 colaboradores elegidos por él)
+  const allowed =
+    actor.role === "admin"
+      ? new Set(ALL_TABS.filter((t) => !hidden.has(t) && t !== "/agencia"))
+      : new Set(settings.teamSections.filter((t) => !ADMIN_ONLY.has(t) && !hidden.has(t)));
+  if (actor.agencyAccess) allowed.add("/agencia");
+  return ALL_TABS.filter((t) => allowed.has(t));
+}
+
+const ADMIN_ONLY = new Set<string>(ADMIN_ONLY_TABS);
+
+/** Qué puede hacer este acceso en Modo agencia. */
+export function agencyAccessOf(actor: Actor): "edit" | "read" | null {
+  return actor.role === "owner" ? "edit" : (actor.agencyAccess ?? null);
 }
 
 export const ALL_TABS = [
@@ -261,5 +272,8 @@ export const enforceTabs: MiddlewareHandler<AppEnv> = async (c, next) => {
   const allowed = allowedTabs(actor, settings);
   if (allowed && !allowed.includes(tab))
     return c.json({ error: "Tu acceso no incluye esta sección." }, 403);
+  if (tab === "/agencia" && c.req.method !== "GET" && agencyAccessOf(actor) !== "edit") {
+    return c.json({ error: "Tu acceso a Modo agencia es de solo lectura." }, 403);
+  }
   return next();
 };

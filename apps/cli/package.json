@@ -1,0 +1,18 @@
+{
+  "name": "@yunque/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Instalador de bots: crea, actualiza, diagnostica, vincula y elimina bots en Cloudflare.",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "@yunque/core": "workspace:*"
+  }
+}

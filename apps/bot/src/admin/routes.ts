@@ -25,7 +25,15 @@ import { configuredProviders } from "../services.js";
 import type { AppEnv } from "../types.js";
 import { agencyApi } from "./agency.js";
 import { analyticsApi } from "./analytics.js";
-import { allowedTabs, enforceTabs, login, logout, requireAuth, resolveActor } from "./auth.js";
+import {
+  agencyAccessOf,
+  allowedTabs,
+  enforceTabs,
+  login,
+  logout,
+  requireAuth,
+  resolveActor,
+} from "./auth.js";
 import { brandingApi } from "./branding.js";
 import { toConversationDto, toLeadDto, toMessageDto, toTicketDto } from "./dto.js";
 import { exportApi } from "./export.js";
@@ -62,6 +70,7 @@ adminApi.get("/session", async (c) => {
     hasPassword: Boolean(c.env.DASHBOARD_PASSWORD),
     actor,
     allowedTabs: actor ? allowedTabs(actor, settings) : null,
+    agencyAccess: actor ? agencyAccessOf(actor) : null,
     branding,
   };
   return c.json(dto);

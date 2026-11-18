@@ -481,6 +481,21 @@ export const loginWithEmailSchema = z.object({
 
 export const assignInputSchema = z.object({ userId: z.string().max(64).nullable() });
 
+/** Equipo de agencia: hasta 3 accesos personales con permiso sobre Modo agencia. */
+export const MAX_AGENCY_COLLABORATORS = 3;
+export type AgencyAccess = "edit" | "read";
+export const agencyAccessInputSchema = z.object({ access: z.enum(["edit", "read"]).nullable() });
+
+/** Cambiar el token, el nombre o la mensualidad de un bot del portafolio. */
+export const agencyClientUpdateSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120),
+    niche: z.string().trim().max(80),
+    token: z.string().trim().min(16).max(200),
+    monthlyFee: z.number().nonnegative().max(1_000_000).nullable(),
+  })
+  .partial();
+
 export interface TeamUserDto {
   id: string;
   email: string;
@@ -491,6 +506,8 @@ export interface TeamUserDto {
   position: string | null;
   createdAt: number;
   lastLoginAt: number | null;
+  /** Permiso sobre Modo agencia (equipo de agencia); `null` = no lo ve. */
+  agencyAccess: "edit" | "read" | null;
 }
 
 export interface AuditEntryDto {
@@ -508,6 +525,8 @@ export interface SessionDto {
   actor: { id: string; name: string; role: "owner" | UserRole } | null;
   /** Pestañas que este acceso puede abrir; `null` = todas. */
   allowedTabs: string[] | null;
+  /** Qué puede hacer en Modo agencia: el dueño edita; los colaboradores según su permiso. */
+  agencyAccess: "edit" | "read" | null;
   branding: {
     panelName: string;
     logoUrl: string;

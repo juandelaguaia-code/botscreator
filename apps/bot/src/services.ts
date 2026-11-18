@@ -67,7 +67,17 @@ export function createKnowledge(env: Env): KnowledgeService {
 /** Arma las dependencias de producción a partir de los bindings del Worker. */
 export function createServices(env: Env): Services {
   const store = new D1Store(env.DB);
-  const config = () => loadConfig(store, { botName: env.BOT_NAME, provider: env.LLM_PROVIDER });
+  const config = () =>
+    loadConfig(store, {
+      botName: env.BOT_NAME,
+      provider: env.LLM_PROVIDER,
+      profile: {
+        giro: env.BOT_GIRO,
+        language: env.BOT_LANGUAGE,
+        currency: env.BOT_CURRENCY,
+        timezone: env.BOT_TIMEZONE,
+      },
+    });
   const keys = providerKeys(env);
   const providerFor = (settings: BotSettings) =>
     createProvider(settings.provider, keys, settings.models);

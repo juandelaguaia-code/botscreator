@@ -6,7 +6,8 @@ description: Revisión mensual de salud del bot, como un tune-up — semáforo d
 
 # Mantenimiento mensual
 
-1. **Salud técnica**: `curl -s <URL>/healthz` y `pnpm yunque resumen`. Revisa `pnpm yunque tickets` con tipo
+1. **Salud técnica**: `pnpm bot doctor <bot>` (salud, secretos, migraciones pendientes y si hay versión nueva;
+   si la hay, propón `/actualizar-bot`) y `pnpm yunque resumen`. Revisa `pnpm yunque tickets` con tipo
    `system` (fallas de IA, llave vencida, límite del proveedor).
 2. **Semáforo** (🟢 bien · 🟡 mirar · 🔴 actuar), con el número y su porqué:
    - % resueltas sin humano (🟢 ≥ 80 · 🟡 60–79 · 🔴 < 60)

@@ -1,5 +1,6 @@
 import type { AgencyClientDto, AgencyLeadDto } from "@yunque/core";
 import { type FormEvent, useState } from "react";
+import { AgencyTeam } from "../components/AgencyTeam.js";
 import { CopyButton } from "../components/CopyButton.js";
 import {
   Badge,
@@ -17,7 +18,13 @@ import { AGENCY_PIPELINE } from "../lib/catalog.js";
 import { CHANNEL_LABEL, dateTime, usd } from "../lib/format.js";
 import { useApi } from "../lib/hooks.js";
 
-function ClientCard({ client, onRemove }: { client: AgencyClientDto; onRemove: () => void }) {
+function ClientCard({
+  client,
+  onRemove,
+}: {
+  client: AgencyClientDto;
+  onRemove: (() => void) | null;
+}) {
   const s = client.summary;
   return (
     <Card className="flex flex-col p-5">
@@ -68,16 +75,26 @@ function ClientCard({ client, onRemove }: { client: AgencyClientDto; onRemove: (
           >
             Abrir panel
           </a>
-          <button type="button" className="text-slate-500 hover:text-red-600" onClick={onRemove}>
-            Quitar
-          </button>
+          {onRemove ? (
+            <button type="button" className="text-slate-500 hover:text-red-600" onClick={onRemove}>
+              Quitar
+            </button>
+          ) : null}
         </div>
       </div>
     </Card>
   );
 }
 
-export function AgencyPage() {
+export function AgencyPage({
+  access = "edit",
+  isOwner = true,
+}: {
+  /** Permiso de este acceso en Modo agencia. */
+  access?: "edit" | "read" | null;
+  isOwner?: boolean;
+}) {
+  const readOnly = access !== "edit";
   const { data, error, loading, reload } = useApi(() => api.agencyClients(), "agency", 60_000);
   const leads = useApi(() => api.agencyLeads(), "agency-leads", 120_000);
   const [form, setForm] = useState({ name: "", niche: "", url: "", token: "", monthlyFee: "" });
@@ -114,6 +131,7 @@ export function AgencyPage() {
       <PageHeader
         title="Modo agencia"
         description="Tu central: los bots de tus clientes en un portafolio, leídos en vivo, y el pipeline de prospecto a cliente que paga."
+        actions={readOnly ? <Badge>Solo lectura</Badge> : undefined}
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -151,74 +169,90 @@ export function AgencyPage() {
             <ClientCard
               key={c.id}
               client={c}
-              onRemove={() => {
-                if (
-                  window.confirm(`¿Quitar a ${c.name} del portafolio? Su bot sigue funcionando.`)
-                ) {
-                  void api.agencyRemove(c.id).then(reload);
-                }
-              }}
+              onRemove={
+                readOnly
+                  ? null
+                  : () => {
+                      if (
+                        window.confirm(
+                          `¿Quitar a ${c.name} del portafolio? Su bot sigue funcionando.`,
+                        )
+                      ) {
+                        void api.agencyRemove(c.id).then(reload);
+                      }
+                    }
+              }
             />
           ))}
         </div>
       )}
 
-      <Card className="mt-6 p-5">
-        <h2 className="font-semibold">Agregar el bot de un cliente</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          En el bot del cliente:{" "}
-          <code className="rounded bg-slate-100 px-1">npx wrangler secret put AGENCY_TOKEN</code>{" "}
-          con un valor largo y aleatorio (p. ej.{" "}
-          <code className="rounded bg-slate-100 px-1">openssl rand -hex 32</code>), y pega aquí ese
-          mismo valor.
-        </p>
-        <form onSubmit={add} className="mt-4 grid gap-3 sm:grid-cols-2">
-          <Field label="Nombre del negocio">
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </Field>
-          <Field label="Giro">
-            <Input
-              value={form.niche}
-              onChange={(e) => setForm({ ...form, niche: e.target.value })}
-              placeholder="barbería, dentista…"
-            />
-          </Field>
-          <Field label="URL del bot">
-            <Input
-              type="url"
-              value={form.url}
-              onChange={(e) => setForm({ ...form, url: e.target.value })}
-              placeholder="https://cliente.workers.dev"
-            />
-          </Field>
-          <Field label="Token de agencia">
-            <Input
-              type="password"
-              value={form.token}
-              onChange={(e) => setForm({ ...form, token: e.target.value })}
-            />
-          </Field>
-          <Field label="Lo que le cobras al mes (opcional)">
-            <Input
-              type="number"
-              min={0}
-              value={form.monthlyFee}
-              onChange={(e) => setForm({ ...form, monthlyFee: e.target.value })}
-            />
-          </Field>
-          <div className="self-end">
-            <Button
-              type="submit"
-              disabled={busy || !form.name || !form.url || form.token.length < 16}
-            >
-              {busy ? "Conectando…" : "Agregar al portafolio"}
-            </Button>
-          </div>
-          <div className="sm:col-span-2">
-            <ErrorNote message={formError} />
-          </div>
-        </form>
-      </Card>
+      {readOnly ? null : (
+        <Card className="mt-6 p-5">
+          <h2 className="font-semibold">Agregar el bot de un cliente</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Lo más rápido: en la terminal,{" "}
+            <code className="rounded bg-slate-100 px-1">pnpm bot vincular &lt;bot&gt;</code> genera
+            el token, lo guarda en el bot del cliente y lo agrega aquí solo. A mano: en el bot del
+            cliente guarda el secreto{" "}
+            <code className="rounded bg-slate-100 px-1">AGENCY_TOKEN</code> con un valor largo y
+            aleatorio (p. ej.{" "}
+            <code className="rounded bg-slate-100 px-1">openssl rand -hex 32</code>) y pega aquí ese
+            mismo valor.
+          </p>
+          <form onSubmit={add} className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Field label="Nombre del negocio">
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </Field>
+            <Field label="Giro">
+              <Input
+                value={form.niche}
+                onChange={(e) => setForm({ ...form, niche: e.target.value })}
+                placeholder="barbería, dentista…"
+              />
+            </Field>
+            <Field label="URL del bot">
+              <Input
+                type="url"
+                value={form.url}
+                onChange={(e) => setForm({ ...form, url: e.target.value })}
+                placeholder="https://cliente.workers.dev"
+              />
+            </Field>
+            <Field label="Token de agencia">
+              <Input
+                type="password"
+                value={form.token}
+                onChange={(e) => setForm({ ...form, token: e.target.value })}
+              />
+            </Field>
+            <Field label="Lo que le cobras al mes (opcional)">
+              <Input
+                type="number"
+                min={0}
+                value={form.monthlyFee}
+                onChange={(e) => setForm({ ...form, monthlyFee: e.target.value })}
+              />
+            </Field>
+            <div className="self-end">
+              <Button
+                type="submit"
+                disabled={busy || !form.name || !form.url || form.token.length < 16}
+              >
+                {busy ? "Conectando…" : "Agregar al portafolio"}
+              </Button>
+            </div>
+            <div className="sm:col-span-2">
+              <ErrorNote message={formError} />
+            </div>
+          </form>
+        </Card>
+      )}
+
+      {isOwner ? <AgencyTeam /> : null}
 
       <h2 className="mt-8 mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
         Clientes de todos tus bots
