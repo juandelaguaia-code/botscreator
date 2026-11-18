@@ -69,6 +69,22 @@ export const WIDGET_JS = `(() => {
     if (open) { input.focus(); poll = setInterval(check, 5000); } else clearInterval(poll);
   });
 
+  function addMedia(list) {
+    for (const m of list || []) {
+      const wrap = document.createElement("div");
+      wrap.className = "m b";
+      let el;
+      if (m.kind === "image") { el = document.createElement("img"); el.style.cssText = "max-width:100%;border-radius:10px;display:block"; }
+      else if (m.kind === "video") { el = document.createElement("video"); el.controls = true; el.style.cssText = "max-width:100%;border-radius:10px"; }
+      else if (m.kind === "audio") { el = document.createElement("audio"); el.controls = true; }
+      else { el = document.createElement("a"); el.textContent = "Abrir archivo"; el.target = "_blank"; el.rel = "noopener"; el.href = m.url; }
+      if (el.tagName !== "A") el.src = m.url.startsWith("http") ? m.url : origin + m.url;
+      wrap.appendChild(el);
+      log.appendChild(wrap);
+    }
+    log.scrollTop = log.scrollHeight;
+  }
+
   function addButtons(buttons) {
     if (!buttons || !buttons.length) return;
     const row = document.createElement("div");
@@ -95,6 +111,7 @@ export const WIDGET_JS = `(() => {
       });
       const data = await r.json();
       if (data.reply) add(data.reply, "b");
+      addMedia(data.attachments);
       addButtons(data.buttons);
       lastSeen = Date.now();
     } catch (_) {

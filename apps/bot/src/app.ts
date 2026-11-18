@@ -78,7 +78,11 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppEnv> {
       text: input.data.text,
       ...(input.data.name ? { userName: input.data.name } : {}),
     });
-    return c.json({ reply: result.reply, buttons: result.buttons });
+    return c.json({
+      reply: result.reply,
+      buttons: result.buttons,
+      attachments: result.attachments,
+    });
   });
 
   app.get("/api/web/messages", async (c) => {
@@ -96,6 +100,28 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppEnv> {
         .map((m) => ({ role: m.role, content: m.content, createdAt: m.createdAt })),
     });
   });
+
+  // ---------- Galería (archivos públicos que el bot manda) y páginas de pago ----------
+
+  app.get("/media/:key", async (c) => {
+    const key = c.req.param("key");
+    if (!c.env.MEDIA || !/^[\w.-]+$/.test(key)) return c.notFound();
+    const object = await c.env.MEDIA.get(key);
+    if (!object) return c.notFound();
+    return c.body(object.body, 200, {
+      "content-type": object.httpMetadata?.contentType ?? "application/octet-stream",
+      "cache-control": "public, max-age=86400",
+    });
+  });
+
+  const page = (title: string, text: string) =>
+    `<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><body style="font-family:system-ui;display:grid;place-items:center;min-height:90vh;text-align:center;padding:16px"><div><h1>${title}</h1><p>${text}</p></div></body></html>`;
+  app.get("/pago/ok", (c) => c.html(page("¡Pago recibido!", "Gracias. Ya puedes volver al chat.")));
+  app.get("/pago/cancelado", (c) =>
+    c.html(
+      page("Pago cancelado", "No se hizo ningún cargo. Puedes volver al chat si necesitas ayuda."),
+    ),
+  );
 
   // ---------- canales con webhook ----------
 

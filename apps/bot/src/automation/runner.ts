@@ -25,6 +25,8 @@ export interface AutomationReport {
   reviews: number;
   hunted: number;
   noShows: number;
+  reminders: number;
+  campaignSent: number;
   dailyReport: boolean;
   watchdog: boolean;
   errors: string[];
@@ -274,6 +276,100 @@ async function recoverNoShows(ctx: RunContext): Promise<void> {
   }
 }
 
+// ---------- recordatorios de cita y campañas ----------
+
+async function sendReminders(ctx: RunContext): Promise<void> {
+  if (!ctx.settings.automation.reminders) return;
+  const { integrations } = ctx.services;
+  // ~24 h antes (ventana de 20 a 26 h para no perder ninguna entre corridas del cron)
+  const due = await integrations.dueReminders(ctx.now + 20 * HOUR, ctx.now + 26 * HOUR);
+  for (const apt of due) {
+    if (!PUSH_CHANNELS.includes(apt.channel)) {
+      await integrations.markReminded(apt.id);
+      continue;
+    }
+    const when = new Intl.DateTimeFormat(
+      ctx.profile.language === "espejo" ? "es-419" : ctx.profile.language,
+      {
+        timeZone: ctx.profile.timezone,
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+      },
+    ).format(new Date(apt.startAt));
+    const text = systemMessage(ctx.profile.language, "appointmentReminder")
+      .replace("{negocio}", ctx.profile.name)
+      .replace("{fecha}", when);
+    const template = ctx.settings.whatsappTemplates.reminder;
+    const sent = await send(ctx, apt.channel, apt.externalId, apt.lastCustomerMessageAt, {
+      text,
+      ...(template ? { template: { ...template, params: [apt.attendeeName ?? "", when] } } : {}),
+    });
+    if (sent.delivered) {
+      ctx.report.reminders++;
+      if (apt.conversationId)
+        await saveProactive(ctx, apt.conversationId, text, "recordatorio", false);
+    }
+    await integrations.markReminded(apt.id); // un solo intento: nunca repetir recordatorios
+  }
+}
+
+const CAMPAIGN_BATCH = 50;
+
+/** Envía por lotes las campañas en curso; respeta la ventana de 24 h de WhatsApp, Instagram y Messenger. */
+export async function sendCampaigns(ctx: RunContext): Promise<void> {
+  const { integrations } = ctx.services;
+  for (const id of await integrations.sendingCampaigns()) {
+    const campaign = await integrations.getCampaign(id);
+    if (!campaign) continue;
+    const recipients = await integrations.campaignRecipients(id, campaign.segment, CAMPAIGN_BATCH);
+    if (recipients.length === 0) {
+      await integrations.setCampaignStatus(id, "done");
+      continue;
+    }
+    const template = ctx.settings.whatsappTemplates.campaign;
+    for (const r of recipients) {
+      const text = campaign.message
+        .replaceAll("{nombre}", r.name ?? "")
+        .replace(/\s+([,.!?])/g, "$1")
+        .trim();
+      const inWindow =
+        r.lastCustomerMessageAt !== null && ctx.now - r.lastCustomerMessageAt < 24 * HOUR;
+      if ((r.channel === "instagram" || r.channel === "messenger") && !inWindow) {
+        await integrations.recordCampaignSend(
+          id,
+          r.contactId,
+          "skipped",
+          "Fuera de la ventana de 24 h",
+        );
+        continue;
+      }
+      if (r.channel === "whatsapp" && !inWindow && !template) {
+        await integrations.recordCampaignSend(
+          id,
+          r.contactId,
+          "skipped",
+          "WhatsApp fuera de 24 h sin plantilla",
+        );
+        continue;
+      }
+      const sent = await send(ctx, r.channel, r.externalId, r.lastCustomerMessageAt, {
+        text,
+        ...(template ? { template: { ...template, params: [r.name ?? ""] } } : {}),
+      });
+      await integrations.recordCampaignSend(
+        id,
+        r.contactId,
+        sent.delivered ? "sent" : "failed",
+        sent.delivered ? undefined : sent.reason,
+      );
+      if (sent.delivered) ctx.report.campaignSent++;
+    }
+  }
+}
+
 // ---------- reporte nocturno y watchdog ----------
 
 async function dailyReport(ctx: RunContext): Promise<void> {
@@ -336,6 +432,8 @@ export async function runAutomation(
     reviews: 0,
     hunted: 0,
     noShows: 0,
+    reminders: 0,
+    campaignSent: 0,
     dailyReport: false,
     watchdog: false,
     errors: [],
@@ -345,6 +443,8 @@ export async function runAutomation(
   await step(ctx, "vigilante", () => closeAndAnalyze(ctx));
   await step(ctx, "cazador", () => hunt(ctx));
   await step(ctx, "no-shows", () => recoverNoShows(ctx));
+  await step(ctx, "recordatorios", () => sendReminders(ctx));
+  await step(ctx, "campañas", () => sendCampaigns(ctx));
   await step(ctx, "reporte", () => dailyReport(ctx));
   await step(ctx, "watchdog", () => watchdog(ctx));
   return report;

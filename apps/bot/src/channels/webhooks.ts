@@ -1,4 +1,6 @@
+import { systemMessage } from "@yunque/core";
 import { type Context, Hono } from "hono";
+import { verifyStripeSignature } from "../integrations/providers.js";
 import type { AppEnv } from "../types.js";
 import { processInbound } from "./inbound.js";
 import {
@@ -8,6 +10,7 @@ import {
   verifyMetaChallenge,
   verifyMetaSignature,
 } from "./meta.js";
+import { deliver } from "./registry.js";
 import { parseTelegramUpdate, type TelegramUpdate, verifyTelegramSecret } from "./telegram.js";
 import { parseTwilioWebhook, verifyTwilioSignature } from "./twilio.js";
 import type { InboundEnvelope } from "./types.js";
@@ -119,4 +122,87 @@ webhooks.post("/twilio", async (c) => {
   if (inbound) runInBackground(c, [inbound]);
   // respuesta vacía: contestamos por la API, no por TwiML
   return c.body("<Response></Response>", 200, { "content-type": "text/xml" });
+});
+
+// ---------- Stripe: pago confirmado ----------
+
+webhooks.post("/stripe", async (c) => {
+  const raw = await c.req.text();
+  if (
+    !(await verifyStripeSignature(
+      raw,
+      c.req.header("stripe-signature"),
+      c.env.STRIPE_WEBHOOK_SECRET,
+    ))
+  ) {
+    return c.json({ error: "Firma inválida" }, 400);
+  }
+  const event = JSON.parse(raw) as {
+    type?: string;
+    data?: { object?: { id?: string; payment_status?: string } };
+  };
+  const session = event.data?.object;
+  if (
+    event.type !== "checkout.session.completed" ||
+    !session?.id ||
+    session.payment_status === "unpaid"
+  ) {
+    return c.json({ received: true });
+  }
+  const services = c.get("services");
+  const payment = await services.integrations.paymentBySession(session.id);
+  if (!payment || !(await services.integrations.markPaid(session.id)))
+    return c.json({ received: true });
+
+  const work = (async () => {
+    const { profile } = await services.config();
+    const amount = `${profile.currency}${payment.amount.toLocaleString("es")} ${payment.currency.toUpperCase()}`;
+    await services.notifier
+      .notify({
+        title: "💳 Pago recibido",
+        body: `${payment.concept} · ${amount}`,
+        ...(payment.conversationId ? { path: `/admin/bandeja/${payment.conversationId}` } : {}),
+      })
+      .catch(() => undefined);
+    const contact = await services.store.getContact(payment.contactId);
+    const conversation = payment.conversationId
+      ? await services.store.getConversation(payment.conversationId)
+      : null;
+    if (contact && conversation) {
+      const text = systemMessage(profile.language, "paymentReceived").replace("{monto}", amount);
+      const sent = await deliver(
+        services.senders,
+        conversation.channel,
+        contact.externalId,
+        { text },
+        {
+          lastCustomerMessageAt: conversation.lastCustomerMessageAt,
+          now: Date.now(),
+        },
+      );
+      if (sent.delivered) {
+        await services.store.addMessage({
+          conversationId: conversation.id,
+          role: "assistant",
+          content: text,
+          meta: { kind: "pago" },
+        });
+      }
+      await services.store.upsertLead({
+        contactId: contact.id,
+        conversationId: conversation.id,
+        interest: payment.concept,
+      });
+      const lead = (await services.store.listLeads(500)).find((l) => l.contactId === contact.id);
+      if (lead) await services.store.updateLead(lead.id, { status: "ganado" });
+    }
+  })().catch((error: unknown) =>
+    console.error(JSON.stringify({ message: "stripe_error", detail: String(error) })),
+  );
+  try {
+    c.executionCtx.waitUntil(work);
+  } catch {
+    // tests
+  }
+  return c.json({ received: true });
 });

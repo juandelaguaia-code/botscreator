@@ -19,7 +19,9 @@ import {
   type LlmMessage,
   type LlmPart,
   type LlmProvider,
+  type LlmTool,
   runToolLoop,
+  type ToolHandler,
 } from "@yunque/llm";
 import type { AutomationStore } from "../automation/store.js";
 import type { MediaAttachment } from "../channels/types.js";
@@ -66,6 +68,25 @@ export interface EngineResult {
   attachments: MediaAttachment[];
 }
 
+/** Herramientas extra que aporta una integración (agenda, cobros, galería, herramientas del dueño). */
+export interface Toolkit {
+  tools: LlmTool[];
+  handlers: Record<string, ToolHandler>;
+  /** Instrucciones de uso que van en el prompt (sección bloqueada). */
+  promptSection?: { title: string; text: string };
+  /** La integración arma flujos de varios pasos: el modo Equilibrado sube al modelo inteligente. */
+  multiStepFlow?: boolean;
+  /** Archivos que sus herramientas decidieron mandar en este turno. */
+  attachments?: MediaAttachment[];
+}
+
+export interface ToolkitContext {
+  contact: ContactRecord;
+  conversation: ConversationRecord;
+  profile: BusinessProfile;
+  settings: BotSettings;
+}
+
 export interface HandoffEvent {
   reason: string;
   contact: ContactRecord;
@@ -79,6 +100,8 @@ export interface EngineDeps {
   loadConfig: () => Promise<{ profile: BusinessProfile; settings: BotSettings }>;
   /** Base de conocimiento (opcional): pasajes por turno, búsqueda y radar de huecos. */
   knowledge?: KnowledgeBase;
+  /** Integraciones activas para este turno. */
+  toolkits?: (ctx: ToolkitContext) => Promise<Toolkit[]>;
   /** Encuestas, memoria del cliente y tope de gasto (opcional). */
   automation?: Pick<
     AutomationStore,
@@ -302,9 +325,13 @@ export class ConversationEngine {
       const provider = this.deps.providerFor(settings);
       const history = await store.listMessages(conversation.id, settings.historyLimit);
       const customerTurns = await store.countCustomerMessages(conversation.id);
+      const toolkitFactory = this.deps.toolkits;
+      const toolkits = toolkitFactory
+        ? await this.safely(() => toolkitFactory({ contact, conversation, profile, settings }), [])
+        : [];
       const tier = chooseModelTier(settings.modelMode, {
         text,
-        multiStepFlow: false,
+        multiStepFlow: toolkits.some((t) => t.multiStepFlow),
         hasImage: Boolean(input.images?.length),
         customerTurns,
       });
@@ -333,6 +360,7 @@ export class ConversationEngine {
         passages,
         buttons: settings.buttonsEnabled,
         customerMemory,
+        extraSections: toolkits.flatMap((t) => (t.promptSection ? [t.promptSection] : [])),
       });
 
       const recordGap = async (question: string, source: "kb_miss" | "handoff" | "verifier") => {
@@ -348,30 +376,38 @@ export class ConversationEngine {
         request: {
           system: { stable: prompt.stable, volatile: prompt.volatile },
           messages: toLlmHistory(history, input.images),
-          tools: kbReady ? [...BUILTIN_TOOLS, SEARCH_TOOL] : BUILTIN_TOOLS,
+          tools: [
+            ...BUILTIN_TOOLS,
+            ...(kbReady ? [SEARCH_TOOL] : []),
+            ...toolkits.flatMap((t) => t.tools),
+          ],
           tier,
         },
-        handlers: buildToolHandlers({
-          store,
-          contact,
-          conversation,
-          onHandoff: async (reason) => {
-            handoff = true;
-            await this.escalate({ contact, conversation, reason });
-          },
-          onMissingInfo: (info) => recordGap(info, "handoff"),
-          ...(knowledge && kbReady
-            ? {
-                search: async (query: string) => {
-                  const found = await knowledge.search(query, searchOptions);
-                  if (found.passing.length === 0) await recordGap(query, "kb_miss");
-                  return found;
-                },
-              }
-            : {}),
-        }),
+        handlers: {
+          ...Object.assign({}, ...toolkits.map((t) => t.handlers)),
+          ...buildToolHandlers({
+            store,
+            contact,
+            conversation,
+            onHandoff: async (reason) => {
+              handoff = true;
+              await this.escalate({ contact, conversation, reason });
+            },
+            onMissingInfo: (info) => recordGap(info, "handoff"),
+            ...(knowledge && kbReady
+              ? {
+                  search: async (query: string) => {
+                    const found = await knowledge.search(query, searchOptions);
+                    if (found.passing.length === 0) await recordGap(query, "kb_miss");
+                    return found;
+                  },
+                }
+              : {}),
+          }),
+        },
       });
       responses.push(...result.responses);
+      const attachments = toolkits.flatMap((t) => t.attachments ?? []);
 
       const usedPassages = passages.map((p) => ({ title: p.title, score: round2(p.score) }));
       const finish = (
@@ -449,7 +485,14 @@ export class ConversationEngine {
         }
       }
 
-      return finish(draft, { buttons, meta: buttons.length ? { buttons } : {} });
+      return finish(draft, {
+        buttons,
+        attachments,
+        meta: {
+          ...(buttons.length ? { buttons } : {}),
+          ...(attachments.length ? { attachments } : {}),
+        },
+      });
     } catch (error) {
       const detail =
         error instanceof LlmError

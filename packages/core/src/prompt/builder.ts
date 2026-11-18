@@ -11,6 +11,7 @@ export type PromptSectionId =
   | "voice"
   | "instructions"
   | "buttons"
+  | "integration"
   | "language";
 
 export interface PromptSection {
@@ -48,6 +49,8 @@ export interface BuildPromptInput {
   buttons?: boolean;
   /** Memoria del cliente de conversaciones anteriores (la deja el Vigilante). */
   customerMemory?: string | null;
+  /** Secciones de integraciones activas (agenda, cobros, galería), bloqueadas para el dueño. */
+  extraSections?: Array<{ title: string; text: string }>;
 }
 
 export function renderPassages(passages: KnowledgePassage[]): string {
@@ -114,6 +117,7 @@ export function buildSystemPrompt({
   passages = [],
   buttons = false,
   customerMemory = null,
+  extraSections = [],
 }: BuildPromptInput): BuiltPrompt {
   const sections: PromptSection[] = [
     {
@@ -148,6 +152,15 @@ export function buildSystemPrompt({
       title: "Instrucciones del dueño",
       locked: false,
       text: `## Instrucciones del dueño\n${profile.instructions}`,
+    });
+  }
+
+  for (const extra of extraSections) {
+    sections.push({
+      id: "integration",
+      title: extra.title,
+      locked: true,
+      text: `## ${extra.title}\n${extra.text}`,
     });
   }
 

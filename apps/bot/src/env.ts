@@ -6,6 +6,8 @@ export interface Env {
   AI?: Ai;
   /** Índice Vectorize de la base de conocimiento. Ausente en desarrollo local. */
   VECTORIZE?: Vectorize;
+  /** Archivos de la Galería (R2). */
+  MEDIA?: R2Bucket;
 
   // variables (wrangler.jsonc)
   BOT_NAME?: string;
@@ -43,6 +45,11 @@ export interface Env {
   RESEND_API_KEY?: string;
   OWNER_EMAIL?: string;
   EMAIL_FROM?: string;
+
+  // Integraciones
+  CALCOM_API_KEY?: string;
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
 }
 
 export const APP_VERSION = "0.1.0";

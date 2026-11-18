@@ -18,7 +18,9 @@ export type SystemMessageKey =
   | "surveyQuestion"
   | "surveyThanks"
   | "surveyLow"
-  | "reviewInvite";
+  | "reviewInvite"
+  | "appointmentReminder"
+  | "paymentReceived";
 
 const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
   "es-419": {
@@ -38,6 +40,9 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
     surveyLow:
       "Gracias por contarnos. Lamento que no haya sido una buena experiencia: ya le avisé al equipo para que te contacte.",
     reviewInvite: "¡Qué bueno que te gustó! Si te animas, tu reseña nos ayuda muchísimo: {url}",
+    appointmentReminder:
+      "Te recuerdo tu cita en {negocio}: {fecha}. Si necesitas cambiarla, respóndeme por aquí.",
+    paymentReceived: "¡Recibimos tu pago de {monto}! Muchas gracias 🙌",
   },
   "es-ES": {
     handoffAck: "¡Por supuesto! Ya he avisado al equipo y enseguida te atiende una persona. 🙌",
@@ -58,6 +63,9 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
       "Gracias por contárnoslo. Siento que no haya sido una buena experiencia: ya he avisado al equipo para que te contacte.",
     reviewInvite:
       "¡Nos alegra que te haya gustado! Si te animas, tu reseña nos ayuda muchísimo: {url}",
+    appointmentReminder:
+      "Te recuerdo tu cita en {negocio}: {fecha}. Si necesitas cambiarla, respóndeme por aquí.",
+    paymentReceived: "¡Hemos recibido tu pago de {monto}! Muchas gracias 🙌",
   },
   en: {
     handoffAck: "Of course! I've let the team know and a person will be with you shortly. 🙌",
@@ -74,6 +82,9 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
     surveyLow:
       "Thanks for telling us. Sorry it wasn't a good experience: I've let the team know so they can reach out.",
     reviewInvite: "So glad you liked it! If you have a minute, a review helps us a lot: {url}",
+    appointmentReminder:
+      "A reminder of your appointment at {negocio}: {fecha}. If you need to change it, just reply here.",
+    paymentReceived: "We received your payment of {monto}! Thank you 🙌",
   },
   "pt-BR": {
     handoffAck: "Claro! Já avisei a equipe e logo uma pessoa vai te atender. 🙌",
@@ -91,6 +102,9 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
     surveyLow:
       "Obrigado por contar. Sinto muito que não foi uma boa experiência: já avisei a equipe para entrar em contato.",
     reviewInvite: "Que bom que você gostou! Se puder, sua avaliação nos ajuda muito: {url}",
+    appointmentReminder:
+      "Lembrete do seu horário em {negocio}: {fecha}. Se precisar mudar, é só responder aqui.",
+    paymentReceived: "Recebemos seu pagamento de {monto}! Muito obrigado 🙌",
   },
 };
 

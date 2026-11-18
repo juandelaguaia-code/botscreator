@@ -24,6 +24,8 @@
   "ai": { "binding": "AI" },
   // Base de conocimiento: `wrangler vectorize create yunque_bot_kb --dimensions=1024 --metric=cosine`
   "vectorize": [{ "binding": "VECTORIZE", "index_name": "yunque_bot_kb" }],
+  // Galería: `wrangler r2 bucket create yunque-bot-media`
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "yunque-bot-media" }],
   "vars": {
     "BOT_NAME": "Mi negocio",
     "LLM_PROVIDER": "anthropic",
@@ -46,6 +48,7 @@
           "migrations_dir": "migrations"
         }
       ],
+      "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "yunque-bot-media" }],
       "vars": {
         "BOT_NAME": "Mi negocio",
         "LLM_PROVIDER": "fake",

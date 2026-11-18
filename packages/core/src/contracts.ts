@@ -325,7 +325,70 @@ export interface AutomationReportDto {
   reviews: number;
   hunted: number;
   noShows: number;
+  reminders: number;
+  campaignSent: number;
   dailyReport: boolean;
   watchdog: boolean;
   errors: string[];
+}
+
+// ---------- integraciones (fase 5) ----------
+
+export interface GalleryItemDto {
+  id: string;
+  name: string;
+  description: string;
+  kind: "image" | "video" | "audio" | "document";
+  contentType: string;
+  size: number;
+  url: string;
+  createdAt: number;
+}
+
+export interface PaymentDto {
+  id: string;
+  conversationId: string | null;
+  concept: string;
+  amount: number;
+  currency: string;
+  url: string;
+  status: "pending" | "paid" | "expired";
+  createdAt: number;
+  paidAt: number | null;
+}
+
+export interface AppointmentDto {
+  id: string;
+  conversationId: string | null;
+  attendeeName: string | null;
+  startAt: number;
+  status: "confirmed" | "cancelled";
+  remindedAt: number | null;
+}
+
+export const campaignInputSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  message: z.string().trim().min(1).max(1000),
+  segment: z.object({
+    /** Estados de lead a incluir; vacío = todos los contactos con conversación. */
+    statuses: z.array(z.enum(LEAD_STATUSES)).max(4).default([]),
+    channels: z
+      .array(z.enum(["whatsapp", "telegram", "instagram", "messenger"]))
+      .min(1)
+      .max(4),
+  }),
+});
+export type CampaignInput = z.infer<typeof campaignInputSchema>;
+
+export interface CampaignDto {
+  id: string;
+  name: string;
+  message: string;
+  segment: CampaignInput["segment"];
+  status: "draft" | "sending" | "done";
+  recipients: number;
+  sent: number;
+  failed: number;
+  skipped: number;
+  createdAt: number;
 }

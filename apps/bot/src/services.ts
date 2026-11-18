@@ -11,6 +11,8 @@ import { type ChannelSenders, createSenders } from "./channels/registry.js";
 import { loadConfig } from "./engine/config.js";
 import { ConversationEngine } from "./engine/engine.js";
 import type { Env } from "./env.js";
+import { IntegrationsStore } from "./integrations/store.js";
+import { createToolkits } from "./integrations/toolkits.js";
 import { type Embedder, HashEmbedder, WorkersAiEmbedder } from "./knowledge/embedder.js";
 import { KnowledgeService } from "./knowledge/service.js";
 import { KnowledgeStore } from "./knowledge/store.js";
@@ -40,6 +42,7 @@ export interface Services {
   engine: ConversationEngine;
   knowledge: KnowledgeService;
   automation: AutomationStore;
+  integrations: IntegrationsStore;
   config: () => ReturnType<typeof loadConfig>;
   providerFor: (settings: BotSettings) => LlmProvider;
   senders: ChannelSenders;
@@ -71,11 +74,13 @@ export function createServices(env: Env): Services {
   const knowledge = createKnowledge(env);
   const notifier = createNotifier(env);
   const automation = new AutomationStore(env.DB);
+  const integrations = new IntegrationsStore(env.DB);
 
   const engine = new ConversationEngine({
     store,
     knowledge,
     automation,
+    toolkits: createToolkits({ env, store, integrations }),
     loadConfig: config,
     providerFor,
     notify: async (event) => {
@@ -94,6 +99,7 @@ export function createServices(env: Env): Services {
     engine,
     knowledge,
     automation,
+    integrations,
     config,
     providerFor,
     senders: createSenders(env),

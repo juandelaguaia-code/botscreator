@@ -26,6 +26,7 @@ import { isAuthenticated, login, logout, requireAuth } from "./auth.js";
 import { toConversationDto, toLeadDto, toMessageDto, toTicketDto } from "./dto.js";
 import { exportApi } from "./export.js";
 import { readJson } from "./http.js";
+import { integrationsApi } from "./integrations.js";
 import { knowledgeApi } from "./knowledge.js";
 
 const FILTERS: ConversationFilter[] = ["all", "needs_human", "unread", "leads"];
@@ -58,6 +59,7 @@ adminApi.use("*", requireAuth);
 adminApi.route("/", knowledgeApi);
 adminApi.route("/export", exportApi);
 adminApi.route("/", analyticsApi);
+adminApi.route("/", integrationsApi);
 
 adminApi.get("/summary", async (c) => c.json(await c.get("services").store.summary(Date.now())));
 
