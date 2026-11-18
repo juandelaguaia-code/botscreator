@@ -228,6 +228,21 @@ export interface KnowledgeGapDto {
 
 export type ConversationFilter = "all" | "needs_human" | "unread" | "leads";
 
+export interface ConnectionsDto {
+  channels: Array<{
+    channel: Channel;
+    configured: boolean;
+    missing: string[];
+    webhookPath: string | null;
+    webhookUrl: string | null;
+    lastInboundAt: number | null;
+  }>;
+  /** Canales por los que llegan los avisos al dueño (telegram, email). */
+  notifications: string[];
+  /** Transcripción de notas de voz disponible (Workers AI). */
+  transcription: boolean;
+}
+
 export interface PromptPreviewDto {
   channel: Channel;
   sections: Array<{ id: string; title: string; locked: boolean; text: string }>;

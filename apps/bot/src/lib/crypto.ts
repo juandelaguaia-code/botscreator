@@ -74,3 +74,24 @@ export async function verifySession(
     return null;
   }
 }
+
+/** HMAC en hexadecimal o base64 (firmas de webhooks de Meta, Twilio y Stripe). */
+export async function hmac(
+  algorithm: "SHA-256" | "SHA-1",
+  secret: string,
+  data: string,
+  encoding: "hex" | "base64",
+): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: algorithm },
+    false,
+    ["sign"],
+  );
+  const sig = new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(data)));
+  if (encoding === "hex") return [...sig].map((b) => b.toString(16).padStart(2, "0")).join("");
+  let binary = "";
+  for (const b of sig) binary += String.fromCharCode(b);
+  return btoa(binary);
+}

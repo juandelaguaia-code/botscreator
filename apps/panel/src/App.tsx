@@ -4,6 +4,7 @@ import { Layout } from "./components/Layout.js";
 import { Spinner } from "./components/ui.js";
 import { api, UNAUTHORIZED_EVENT } from "./lib/api.js";
 import { CommandsPage } from "./pages/Commands.js";
+import { ConnectionsPage } from "./pages/Connections.js";
 import { ImprovementsPage } from "./pages/Improvements.js";
 import { InboxPage } from "./pages/Inbox.js";
 import { KnowledgePage } from "./pages/Knowledge.js";
@@ -72,6 +73,7 @@ export function App() {
         <Route path="/clientes" element={<LeadsPage />} />
         <Route path="/tickets" element={<TicketsPage />} />
         <Route path="/conocimiento" element={<KnowledgePage />} />
+        <Route path="/conexiones" element={<ConnectionsPage />} />
         <Route path="/mejoras" element={<ImprovementsPage />} />
         <Route path="/probar" element={<PlaygroundPage />} />
         <Route path="/superpoderes" element={<SuperpowersPage />} />

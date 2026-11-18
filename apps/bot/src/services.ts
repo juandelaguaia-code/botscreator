@@ -1,12 +1,20 @@
-import { availableProviders, createProvider, type ProviderKeys } from "@yunque/llm";
-import { sendTelegramMessage } from "./channels/telegram.js";
+import type { BotSettings } from "@yunque/core";
+import {
+  availableProviders,
+  createProvider,
+  type LlmProvider,
+  type ProviderKeys,
+} from "@yunque/llm";
+import { type Transcriber, WorkersAiTranscriber } from "./channels/media.js";
+import { type ChannelSenders, createSenders } from "./channels/registry.js";
 import { loadConfig } from "./engine/config.js";
-import { ConversationEngine, type HandoffEvent } from "./engine/engine.js";
+import { ConversationEngine } from "./engine/engine.js";
 import type { Env } from "./env.js";
 import { type Embedder, HashEmbedder, WorkersAiEmbedder } from "./knowledge/embedder.js";
 import { KnowledgeService } from "./knowledge/service.js";
 import { KnowledgeStore } from "./knowledge/store.js";
 import { D1VectorIndex, type VectorIndex, VectorizeIndex } from "./knowledge/vector-index.js";
+import { createNotifier, type Notifier } from "./notify.js";
 import { D1Store } from "./store/d1.js";
 import type { Store } from "./store/types.js";
 
@@ -26,10 +34,16 @@ export function configuredProviders(env: Env): string[] {
 }
 
 export interface Services {
+  env: Env;
   store: Store;
   engine: ConversationEngine;
   knowledge: KnowledgeService;
   config: () => ReturnType<typeof loadConfig>;
+  providerFor: (settings: BotSettings) => LlmProvider;
+  senders: ChannelSenders;
+  notifier: Notifier;
+  /** Oído: transcripción de notas de voz (null sin Workers AI). */
+  transcriber: Transcriber | null;
 }
 
 /**
@@ -50,28 +64,35 @@ export function createServices(env: Env): Services {
   const store = new D1Store(env.DB);
   const config = () => loadConfig(store, { botName: env.BOT_NAME, provider: env.LLM_PROVIDER });
   const keys = providerKeys(env);
+  const providerFor = (settings: BotSettings) =>
+    createProvider(settings.provider, keys, settings.models);
   const knowledge = createKnowledge(env);
+  const notifier = createNotifier(env);
 
   const engine = new ConversationEngine({
     store,
     knowledge,
     loadConfig: config,
-    providerFor: (settings) => createProvider(settings.provider, keys, settings.models),
-    notify: async (event) => notifyOwner(env, event),
+    providerFor,
+    notify: async (event) => {
+      const who = event.contact.name ?? event.contact.externalId;
+      await notifier.notify({
+        title: "🙋 Te necesitan en una conversación",
+        body: `Motivo: ${event.reason}\nCliente: ${who} (${event.conversation.channel})`,
+        path: `/admin/bandeja/${event.conversation.id}`,
+      });
+    },
   });
 
-  return { store, engine, knowledge, config };
-}
-
-async function notifyOwner(env: Env, event: HandoffEvent): Promise<void> {
-  if (!env.TELEGRAM_BOT_TOKEN || !env.OWNER_TELEGRAM_CHAT_ID) return;
-  const who = event.contact.name ?? event.contact.externalId;
-  const link = env.PUBLIC_URL
-    ? `\n${env.PUBLIC_URL.replace(/\/$/, "")}/admin/bandeja/${event.conversation.id}`
-    : "";
-  await sendTelegramMessage(
-    env.TELEGRAM_BOT_TOKEN,
-    env.OWNER_TELEGRAM_CHAT_ID,
-    `🙋 Te necesitan en una conversación\nMotivo: ${event.reason}\nCliente: ${who} (${event.conversation.channel})${link}`,
-  );
+  return {
+    env,
+    store,
+    engine,
+    knowledge,
+    config,
+    providerFor,
+    senders: createSenders(env),
+    notifier,
+    transcriber: env.AI ? new WorkersAiTranscriber(env.AI) : null,
+  };
 }

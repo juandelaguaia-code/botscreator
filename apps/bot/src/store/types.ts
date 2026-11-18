@@ -170,6 +170,8 @@ export interface Store {
   resolveTicket(id: string): Promise<boolean>;
 
   recordUsage(input: UsageInput): Promise<void>;
+  /** Último mensaje de un cliente por canal (para saber si un canal está vivo). */
+  lastInboundByChannel(): Promise<Partial<Record<Channel, number>>>;
   /** Mensajes con su conversación y contacto, en orden, para exportar. */
   exportMessages(limit: number): Promise<ExportMessageRow[]>;
   summary(now: number): Promise<SummaryDto>;

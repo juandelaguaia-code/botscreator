@@ -1,12 +1,7 @@
-import { systemMessage, webChatInputSchema } from "@yunque/core";
-import { type Context, Hono } from "hono";
+import { webChatInputSchema } from "@yunque/core";
+import { Hono } from "hono";
 import { adminApi } from "./admin/routes.js";
-import {
-  parseTelegramUpdate,
-  sendTelegramMessage,
-  type TelegramUpdate,
-  verifyTelegramSecret,
-} from "./channels/telegram.js";
+import { webhooks } from "./channels/webhooks.js";
 import { WIDGET_JS } from "./channels/widget.js";
 import { APP_VERSION } from "./env.js";
 import { createServices, type Services } from "./services.js";
@@ -102,62 +97,9 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppEnv> {
     });
   });
 
-  // ---------- Telegram ----------
+  // ---------- canales con webhook ----------
 
-  app.post("/webhooks/telegram", async (c) => {
-    if (
-      !verifyTelegramSecret(
-        c.req.header("x-telegram-bot-api-secret-token"),
-        c.env.TELEGRAM_WEBHOOK_SECRET,
-      )
-    ) {
-      return c.json({ error: "No autorizado" }, 401);
-    }
-    const token = c.env.TELEGRAM_BOT_TOKEN;
-    const inbound = parseTelegramUpdate((await c.req.json()) as TelegramUpdate);
-    if (!inbound || !token) return c.json({ ok: true });
-
-    // Telegram reintenta si tardamos: respondemos ya y procesamos en segundo plano.
-    const services = c.get("services");
-    const work = (async () => {
-      if (!inbound.text && inbound.hasUnsupportedMedia) {
-        const { profile } = await services.config();
-        const note =
-          profile.language === "en"
-            ? "For now I can only read text messages. Could you write it to me?"
-            : profile.language === "pt-BR"
-              ? "Por enquanto só consigo ler mensagens de texto. Pode me escrever?"
-              : "Por ahora solo puedo leer mensajes de texto. ¿Me lo escribes?";
-        await sendTelegramMessage(token, inbound.chatId, note);
-        return;
-      }
-      const result = await services.engine.handleInbound({
-        channel: "telegram",
-        externalUserId: inbound.chatId,
-        text: inbound.text,
-        ...(inbound.name ? { userName: inbound.name } : {}),
-      });
-      if (result.reply)
-        await sendTelegramMessage(token, inbound.chatId, result.reply, result.buttons);
-      else if (result.skipped === "rate_limited") {
-        const { profile } = await services.config();
-        await sendTelegramMessage(
-          token,
-          inbound.chatId,
-          systemMessage(profile.language, "rateLimited"),
-        );
-      }
-    })().catch((error: unknown) => {
-      console.error(
-        JSON.stringify({
-          message: "telegram_error",
-          detail: error instanceof Error ? error.message : String(error),
-        }),
-      );
-    });
-    runInBackground(c, work);
-    return c.json({ ok: true });
-  });
+  app.route("/webhooks", webhooks);
 
   // ---------- panel ----------
 
@@ -173,12 +115,4 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppEnv> {
   });
 
   return app;
-}
-
-function runInBackground(c: Context<AppEnv>, work: Promise<unknown>): void {
-  try {
-    c.executionCtx.waitUntil(work);
-  } catch {
-    // fuera de Workers (tests) no hay executionCtx: la promesa sigue igual
-  }
 }

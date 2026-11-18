@@ -20,6 +20,7 @@ import {
   type LlmProvider,
   runToolLoop,
 } from "@yunque/llm";
+import type { MediaAttachment } from "../channels/types.js";
 import type { KnowledgeBase, SearchHit } from "../knowledge/service.js";
 import type { ContactRecord, ConversationRecord, MessageRecord, Store } from "../store/types.js";
 import { BUILTIN_TOOLS, buildToolHandlers, SEARCH_TOOL } from "./tools.js";
@@ -59,6 +60,8 @@ export interface EngineResult {
   blocked: BlockedReply | null;
   /** Pasajes de la base de conocimiento usados en el turno. */
   passages: Array<{ title: string; score: number }>;
+  /** Archivos de la Galería que el bot decidió mandar. */
+  attachments: MediaAttachment[];
 }
 
 export interface HandoffEvent {
@@ -116,6 +119,7 @@ export class ConversationEngine {
       buttons: [],
       blocked: null,
       passages: [],
+      attachments: [],
     };
     if (!text && !input.images?.length)
       return { ...base, reply: null, handoff: false, skipped: "empty" };
@@ -158,6 +162,34 @@ export class ConversationEngine {
     }
 
     return this.answerWithAi({ contact, conversation, profile, settings, input, text });
+  }
+
+  /**
+   * Una persona del negocio contestó desde la app del canal (bandeja de Meta, WhatsApp Business):
+   * se registra en el hilo y el bot se aparta igual que si respondiera desde el panel.
+   */
+  async recordBusinessReply(channel: Channel, externalUserId: string, text: string): Promise<void> {
+    const { store } = this.deps;
+    const contact = await store.upsertContact({ channel, externalId: externalUserId });
+    const conversation =
+      (await store.findOpenConversation(contact.id, channel)) ??
+      (await store.createConversation({ contactId: contact.id, channel }));
+    const { settings } = await this.deps.loadConfig();
+    const now = this.now();
+    if (text) {
+      await store.addMessage({
+        conversationId: conversation.id,
+        role: "human",
+        content: text,
+        meta: { author: "channel_app" },
+      });
+    }
+    await store.updateConversation(conversation.id, {
+      pausedUntil: Math.max(conversation.pausedUntil ?? 0, now + settings.takeoverMinutes * 60_000),
+      needsHuman: false,
+      lastMessageAt: now,
+      ...(text ? { lastMessagePreview: preview(text) } : {}),
+    });
   }
 
   /** Respuesta de una persona del equipo desde el panel: el bot se aparta `takeoverMinutes`. */
@@ -279,6 +311,7 @@ export class ConversationEngine {
           handoff: extra.handoff ?? handoff,
           model: result.final.model,
           blocked: extra.blocked ?? null,
+          attachments: extra.attachments ?? [],
           passages: usedPassages,
           meta: {
             model: result.final.model,
@@ -364,7 +397,15 @@ export class ConversationEngine {
       const reply = systemMessage(profile.language, "errorFallback");
       await this.recordUsage(conversation.id, responses);
       await this.saveAssistant(conversation.id, reply, { kind: "error" });
-      return { ...base, reply, buttons: [], handoff: true, blocked: null, passages: [] };
+      return {
+        ...base,
+        reply,
+        buttons: [],
+        handoff: true,
+        blocked: null,
+        passages: [],
+        attachments: [],
+      };
     }
   }
 

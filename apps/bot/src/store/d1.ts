@@ -508,6 +508,17 @@ export class D1Store implements Store {
       .run();
   }
 
+  async lastInboundByChannel(): Promise<Partial<Record<Channel, number>>> {
+    const { results } = await this.db
+      .prepare(
+        "SELECT channel, MAX(last_customer_message_at) AS last FROM conversations GROUP BY channel",
+      )
+      .all<Row>();
+    const out: Partial<Record<Channel, number>> = {};
+    for (const r of results) if (r.last !== null) out[String(r.channel) as Channel] = num(r.last);
+    return out;
+  }
+
   async exportMessages(limit: number): Promise<ExportMessageRow[]> {
     const { results } = await this.db
       .prepare(

@@ -1,4 +1,5 @@
 import type {
+  ConnectionsDto,
   ConversationDetailDto,
   ConversationFilter,
   ConversationListItemDto,
@@ -80,6 +81,7 @@ export const api = {
   resolveTicket: (id: string) => post<{ ok: true }>(`/tickets/${id}/resolve`),
 
   settings: () => request<SettingsDto>("/settings"),
+  connections: () => request<ConnectionsDto>("/connections"),
   saveSettings: (update: SettingsUpdate) =>
     request<SettingsDto>("/settings", { method: "PUT", body: JSON.stringify(update) }),
 

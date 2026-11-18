@@ -12,7 +12,9 @@ export type SystemMessageKey =
   | "errorFallback"
   | "botPausedNotice"
   | "rateLimited"
-  | "confirmWithTeam";
+  | "confirmWithTeam"
+  | "unsupportedMedia"
+  | "budgetReached";
 
 const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
   "es-419": {
@@ -23,6 +25,10 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
     rateLimited: "Recibí muchos mensajes seguidos. Dame un momento y te respondo.",
     confirmWithTeam:
       "Déjame confirmarlo con el equipo para no darte un dato equivocado. En un momento te respondemos. 🙌",
+    unsupportedMedia:
+      "Por ahora no puedo abrir ese tipo de archivo. ¿Me lo escribes en un mensaje?",
+    budgetReached:
+      "Gracias por escribir. En este momento te atiende el equipo directamente; en breve te respondemos.",
   },
   "es-ES": {
     handoffAck: "¡Por supuesto! Ya he avisado al equipo y enseguida te atiende una persona. 🙌",
@@ -32,6 +38,10 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
     rateLimited: "He recibido muchos mensajes seguidos. Dame un momento y te respondo.",
     confirmWithTeam:
       "Déjame confirmarlo con el equipo para no darte un dato equivocado. Enseguida te respondemos. 🙌",
+    unsupportedMedia:
+      "Por ahora no puedo abrir ese tipo de archivo. ¿Me lo escribes en un mensaje?",
+    budgetReached:
+      "Gracias por escribir. Ahora mismo te atiende el equipo directamente; enseguida te respondemos.",
   },
   en: {
     handoffAck: "Of course! I've let the team know and a person will be with you shortly. 🙌",
@@ -41,6 +51,8 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
     rateLimited: "I got a lot of messages in a row. Give me a moment and I'll get back to you.",
     confirmWithTeam:
       "Let me confirm that with the team so I don't give you the wrong info. We'll get back to you shortly. 🙌",
+    unsupportedMedia: "I can't open that type of file yet. Could you write it in a message?",
+    budgetReached: "Thanks for writing. The team will reply to you directly very soon.",
   },
   "pt-BR": {
     handoffAck: "Claro! Já avisei a equipe e logo uma pessoa vai te atender. 🙌",
@@ -50,6 +62,9 @@ const MESSAGES: Record<SystemLocale, Record<SystemMessageKey, string>> = {
     rateLimited: "Recebi muitas mensagens seguidas. Me dá um momento que já te respondo.",
     confirmWithTeam:
       "Deixa eu confirmar com a equipe para não te passar uma informação errada. Já te respondemos. 🙌",
+    unsupportedMedia:
+      "Ainda não consigo abrir esse tipo de arquivo. Pode me escrever numa mensagem?",
+    budgetReached: "Obrigado por escrever. A equipe vai te responder diretamente em breve.",
   },
 };
 

@@ -16,7 +16,7 @@ import {
   settingsUpdateSchema,
 } from "@yunque/core";
 import { type Context, Hono } from "hono";
-import { sendTelegramMessage } from "../channels/telegram.js";
+import { channelStatuses, deliver } from "../channels/registry.js";
 import { SETTINGS_KEYS } from "../engine/config.js";
 import { PAUSE_FOREVER } from "../engine/engine.js";
 import { configuredProviders } from "../services.js";
@@ -83,29 +83,30 @@ adminApi.get("/conversations/:id", async (c) => {
 adminApi.post("/conversations/:id/reply", async (c) => {
   const input = await readJson(c.req.raw, replyInputSchema);
   if (!input) return c.json({ error: "Escribe un mensaje." }, 400);
-  const { engine, store } = c.get("services");
+  const { engine, store, senders } = c.get("services");
   const id = c.req.param("id");
   const existing = await store.getConversation(id);
   if (!existing) return c.json({ error: "Conversación no encontrada" }, 404);
 
   const { message, conversation } = await engine.humanReply(id, input.text);
   const contact = await store.getContact(conversation.contactId);
-
-  // web y prueba: el widget recoge el mensaje al consultar; Telegram se entrega ahora.
-  let delivered = conversation.channel === "web" || conversation.channel === "playground";
-  let deliveryError: string | null = null;
-  if (conversation.channel === "telegram" && contact) {
-    if (!c.env.TELEGRAM_BOT_TOKEN) deliveryError = "Falta TELEGRAM_BOT_TOKEN";
-    else {
-      try {
-        await sendTelegramMessage(c.env.TELEGRAM_BOT_TOKEN, contact.externalId, input.text);
-        delivered = true;
-      } catch (error) {
-        deliveryError = error instanceof Error ? error.message : String(error);
-      }
-    }
-  }
-  return c.json({ message: toMessageDto(message), delivered, deliveryError });
+  const result = contact
+    ? await deliver(
+        senders,
+        conversation.channel,
+        contact.externalId,
+        { text: input.text },
+        {
+          lastCustomerMessageAt: conversation.lastCustomerMessageAt,
+          now: Date.now(),
+        },
+      )
+    : { delivered: false as const, reason: "Contacto no encontrado" };
+  return c.json({
+    message: toMessageDto(message),
+    delivered: result.delivered,
+    deliveryError: result.delivered ? null : result.reason,
+  });
 });
 
 adminApi.post("/conversations/:id/note", async (c) => {
@@ -186,6 +187,21 @@ async function settingsDto(c: Context<AppEnv>): Promise<SettingsDto> {
 }
 
 adminApi.get("/settings", async (c) => c.json(await settingsDto(c)));
+
+/** Estado de los canales (pestaña Conexiones). Nunca expone valores de secretos. */
+adminApi.get("/connections", async (c) => {
+  const lastInbound = await c.get("services").store.lastInboundByChannel();
+  const base = c.env.PUBLIC_URL?.replace(/\/$/, "") || new URL(c.req.url).origin;
+  return c.json({
+    channels: channelStatuses(c.env).map((ch) => ({
+      ...ch,
+      webhookUrl: ch.webhookPath ? `${base}${ch.webhookPath}` : null,
+      lastInboundAt: lastInbound[ch.channel] ?? null,
+    })),
+    notifications: c.get("services").notifier.channels,
+    transcription: Boolean(c.env.AI),
+  });
+});
 
 /** El prompt tal como lo recibe el modelo, por secciones (lo editable y lo bloqueado 🔒). */
 adminApi.get("/prompt", async (c) => {

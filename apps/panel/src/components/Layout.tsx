@@ -8,6 +8,7 @@ const NAV = [
   { to: "/clientes", label: "Clientes", icon: "☺", end: false },
   { to: "/tickets", label: "Tickets", icon: "⚑", end: false },
   { to: "/conocimiento", label: "Conocimiento", icon: "▤", end: false },
+  { to: "/conexiones", label: "Conexiones", icon: "⇄", end: false },
   { to: "/mejoras", label: "Mejoras", icon: "✦", end: false },
   { to: "/probar", label: "Probar bot", icon: "▶", end: false },
   { to: "/superpoderes", label: "Superpoderes", icon: "⚡", end: false },
